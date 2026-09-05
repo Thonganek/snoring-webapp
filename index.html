@@ -314,6 +314,8 @@
     transition: border-color .16s, box-shadow .16s;
   }
   .field textarea { min-height: 92px; resize: vertical; }
+  #reportAuditField label { display: flex; align-items: flex-start; gap: 10px; }
+  #reportIncludeAudit { width: 18px; height: 18px; padding: 0; flex: 0 0 18px; margin-top: 3px; accent-color: var(--primary); }
   .field input:focus, .field select:focus, .field textarea:focus, .thai-dp-sel:focus {
     outline: none; border-color: var(--primary-light);
     box-shadow: 0 0 0 3px rgba(47, 184, 174, .18);
@@ -1410,7 +1412,7 @@
       <div class="dashboard-main">
       <div class="section-head dashboard-hero">
         <div><span class="eyebrow">โรงพยาบาลธัญบุรี · Pediatric OSA Screening</span><h2>ผลคัดกรองเด็กนอนกรน</h2><p>ติดตามผลประเมินและจัดการการดูแลเด็กในที่เดียว</p><small id="dashboardUpdated" class="dash-updated" aria-live="polite">กำลังโหลดข้อมูล…</small></div>
-        <div class="dash-actions"><button type="button" class="btn primary" onclick="showTab('child')"><i class="fa-solid fa-plus" aria-hidden="true"></i> ลงทะเบียนเด็ก</button><button id="dashboardRefresh" type="button" class="btn secondary" onclick="loadDashboard(true)"><i class="fa-solid fa-rotate" aria-hidden="true"></i> รีเฟรช</button></div>
+        <div class="dash-actions"><button type="button" class="btn primary" onclick="showTab('child')"><i class="fa-solid fa-plus" aria-hidden="true"></i> ลงทะเบียนเด็ก</button><button type="button" id="exportReportButton" class="btn secondary staff-only" onclick="openReportDialog()"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> รายงาน Excel</button><button id="dashboardRefresh" type="button" class="btn secondary" onclick="loadDashboard(true)"><i class="fa-solid fa-rotate" aria-hidden="true"></i> รีเฟรช</button></div>
       </div>
       <div id="dash-overview" class="dash-pane" role="tabpanel" aria-labelledby="dash-tab-overview" tabindex="0">
         <div id="metrics" class="metric-grid"></div>
@@ -1431,6 +1433,19 @@
       <div id="dash-users" class="dash-pane panel" role="tabpanel" aria-labelledby="dash-tab-users" tabindex="0" hidden><div id="adminPanel"><div class="section-head"><div><h3>ผู้ใช้และสิทธิ์การเข้าถึง</h3><p>เลือกผู้ใช้เพื่อแก้ไขชื่อ บทบาท และสถานะบัญชี</p></div></div><div class="dash-toolbar"><div class="field"><label for="dashboardUserSearch">ค้นหาผู้ใช้</label><input id="dashboardUserSearch" type="search" placeholder="ชื่อ หรือรหัสผู้ใช้" oninput="filterDashboardTables()"></div></div><div id="adminDashboard"></div></div></div>
       </div>
       </div>
+      <dialog id="reportDialog" class="dash-dialog" aria-labelledby="reportTitle">
+        <button type="button" class="dash-close" aria-label="ปิดรายงาน" onclick="this.closest('dialog').close()">×</button>
+        <h3 id="reportTitle">ส่งออกรายงาน Excel</h3>
+        <p>รายงานฉบับเต็ม พร้อมบทสรุปผู้บริหาร สถิติ ข้อมูลเด็ก ผลคัดกรอง คำตอบทุกข้อ และรายการติดตาม</p>
+        <div class="notice">รายงานดึงข้อมูลทั้งหมดตามขอบเขตที่เลือก ไม่จำกัดตามหน้าตารางหรือตัวกรองบน Dashboard</div>
+        <div class="field mt"><label for="reportScope">ประเภทข้อมูล</label><select id="reportScope"><option value="all">ทั้งหมด (รวมข้อมูลทดสอบ)</option><option value="real">ข้อมูลจริงเท่านั้น</option><option value="test">ข้อมูลทดสอบเท่านั้น</option></select></div>
+        <div class="grid two mt"><div class="field"><label for="reportFrom">วันที่คัดกรองเริ่มต้น</label><input id="reportFrom" type="date"></div><div class="field"><label for="reportTo">วันที่คัดกรองสิ้นสุด</label><input id="reportTo" type="date"></div></div>
+        <p class="hint mt">เว้นวันที่ว่างเพื่อรวมทุกช่วงเวลา หากเลือกวันที่ จะรวมเฉพาะเด็กที่มีผลคัดกรองในช่วงนั้น โดยใช้เวลาประเทศไทย</p>
+        <div id="reportAuditField" class="field mt"><label><input id="reportIncludeAudit" type="checkbox"> รวมบันทึกกิจกรรมระบบ (เฉพาะผู้ดูแลระบบ)</label></div>
+        <p class="hint mt">ข้อมูลทดสอบจะระบุแยกในรายงาน ผู้ใช้และบันทึกกิจกรรมแสดงตามสิทธิ์บัญชีที่ส่งออก</p>
+        <button type="button" id="reportDownloadButton" class="btn primary" onclick="downloadExcelReport()"><i class="fa-solid fa-download" aria-hidden="true"></i> ดาวน์โหลดรายงาน .xlsx</button>
+        <p id="reportStatus" class="hint mt" role="status" aria-live="polite"></p>
+      </dialog>
       <dialog id="screeningEditor" class="dash-dialog" aria-label="ทบทวนผลคัดกรอง"><button type="button" class="dash-close" aria-label="ปิดหน้าต่าง" onclick="this.closest('dialog').close()">×</button>
               <h3>จัดการเคสคัดกรอง</h3>
               <div class="field mt">
@@ -1596,7 +1611,7 @@
         response = await fetch(endpoint, {
           method: 'POST', headers,
           body: JSON.stringify({ method: name, args: args || [] }),
-          signal: AbortSignal.timeout(35000)
+          signal: AbortSignal.timeout(name === 'getReportData' ? 125000 : 35000)
         });
       } catch {
         throw new Error('ติดต่อเว็บไซต์ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตและลองใหม่');
@@ -2340,6 +2355,52 @@
           </article>
         `;
       }).join('')}</div>`;
+    }
+
+    let reportLibraryPromise;
+    function openReportDialog() {
+      if (!hasClinicalAccess()) return toast('รายงานนี้สำหรับเจ้าหน้าที่');
+      document.getElementById('reportAuditField').hidden = !isAdmin();
+      if (!isAdmin()) document.getElementById('reportIncludeAudit').checked = false;
+      document.getElementById('reportDialog').showModal();
+    }
+
+    function loadReportLibrary() {
+      if (!reportLibraryPromise) reportLibraryPromise = new Promise((resolve, reject) => {
+        if (window.ExcelJS) return resolve(window.ExcelJS);
+        const script = document.createElement('script');
+        script.src = 'assets/exceljs.min.js';
+        script.onload = () => window.ExcelJS ? resolve(window.ExcelJS) : reject(new Error('โหลดเครื่องมือ Excel ไม่สำเร็จ'));
+        script.onerror = () => { script.remove(); reject(new Error('โหลดเครื่องมือ Excel ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่')); };
+        document.head.appendChild(script);
+      }).catch(error => { reportLibraryPromise = null; throw error; });
+      return reportLibraryPromise;
+    }
+
+    async function downloadExcelReport() {
+      if (!hasClinicalAccess()) return toast('รายงานนี้สำหรับเจ้าหน้าที่');
+      const button = document.getElementById('reportDownloadButton');
+      if (button.disabled) return;
+      const status = document.getElementById('reportStatus');
+      const options = { from: val('reportFrom'), to: val('reportTo'), scope: val('reportScope'), includeAudit: isAdmin() && document.getElementById('reportIncludeAudit').checked };
+      if (options.from && options.to && options.from > options.to) { status.textContent = 'วันเริ่มต้นต้องไม่เกินวันสิ้นสุด'; return; }
+      button.disabled = true;
+      try {
+        status.textContent = 'กำลังดึงข้อมูลรายงานทั้งหมดจากระบบ…';
+        const [data, ExcelJS, module] = await Promise.all([callServer('getReportData', [state.token, options]), loadReportLibrary(), import('./assets/report-workbook.js')]);
+        status.textContent = 'กำลังจัดรูปแบบสรุปและสร้างไฟล์ Excel…';
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const workbook = await module.createReportWorkbook(data, ExcelJS);
+        const buffer = await workbook.xlsx.writeBuffer();
+        const url = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'OSA_Report_' + options.scope + '_' + (options.from || 'all') + '_' + (options.to || 'all') + '_' + data.exportedAt.slice(0,10) + '.xlsx';
+        document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        status.textContent = 'ดาวน์โหลดรายงานแล้ว ' + workbook.worksheets.length + ' ชีต · เด็ก ' + data.children.length + ' คน · ผลคัดกรอง ' + data.screenings.length + ' ครั้ง';
+      } catch (error) { status.textContent = error.message || 'ส่งออกรายงานไม่สำเร็จ กรุณาลองใหม่'; }
+      finally { button.disabled = false; }
     }
 
     function dashboardIcon(name) {
