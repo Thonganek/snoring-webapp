@@ -1,0 +1,3014 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ระบบคัดกรองเด็กนอนกรน | โรงพยาบาลธัญบุรี</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+    <style>
+  /* ══════════════════════════════════════════════════════════════
+     Snoring OSA Screening — Theme (teal) on Bootstrap 5.3
+     Single source of truth. Do not add a second :root block below;
+     change the tokens here instead.
+     ══════════════════════════════════════════════════════════════ */
+  :root {
+    --primary:        #007d77;
+    --primary-dark:   #00565c;
+    --primary-light:  #2fb8ae;
+    --primary-pale:   #e3f4f1;
+    --grad:           linear-gradient(135deg, #007d77, #00565c);
+    --grad-soft:      linear-gradient(135deg, #2fb8ae, #007d77);
+
+    --ink:   #14302f;
+    --ink2:  #4a6664;   /* referenced inline from JS — keep this name */
+    --mt:    #7d9694;   /* referenced inline from JS — keep this name */
+    --line:  #d8e7e2;
+    --panel: #ffffff;
+
+    --low:     #198754;
+    --moderate:#b26a00;
+    --high:    #dc3545;
+    --urgent:  #9d174d;
+    --neutral: #6c757d;
+
+    --radius:  22px;
+    --radius-sm: 14px;
+    --card-shadow: 0 10px 30px rgba(0, 90, 85, .08);
+    --hover-shadow: 0 16px 40px rgba(0, 90, 85, .16);
+  }
+
+  * { box-sizing: border-box; }
+  button:not(:disabled) { cursor: pointer; }
+  /* The navbar is sticky, so anything scrolled to must clear it. */
+  #screeningSteps, .q-card { scroll-margin-top: 96px; }
+
+  body {
+    font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #eef8f7 0%, #f7fbfa 60%, #ffffff 100%);
+    background-attachment: fixed;
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 15.5px;
+    line-height: 1.65;
+  }
+  body.login-modal-open { overflow: hidden; }
+
+  .hidden { display: none !important; }
+  .mt  { margin-top: 16px; }
+  .stack > * + * { margin-top: 18px; }
+
+  /* Role-gated fields: parents never see clinical/staff inputs */
+  body[data-role="parent"] .staff-only,
+  body[data-role="parent"] .clinical-field { display: none !important; }
+
+  /* ── Navbar ─────────────────────────────────────────────── */
+  .navbar-custom {
+    background: var(--grad);
+    box-shadow: 0 2px 18px rgba(0, 60, 57, .18);
+    padding: .55rem 0;
+  }
+  .navbar-custom .navbar-brand {
+    display: flex; align-items: center; gap: 12px;
+    color: #fff; text-decoration: none;
+  }
+  .brand-mark {
+    width: 46px; height: 46px; flex: 0 0 46px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .18);
+    border: 1px solid rgba(255, 255, 255, .35);
+    display: grid; place-items: center;
+    font-weight: 700; font-size: .95rem; letter-spacing: .5px;
+  }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.25; }
+  .brand-text small { font-size: .66rem; opacity: .82; letter-spacing: .4px; text-transform: uppercase; }
+  .brand-text strong { font-size: 1.02rem; font-weight: 600; }
+  .navbar-toggler {
+    border-color: rgba(255, 255, 255, .5);
+  }
+  .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255,255,255,0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  }
+
+  #tabs { display: none; flex-wrap: wrap; gap: 6px; }
+  #tabs button {
+    background: transparent; border: 1px solid transparent;
+    color: rgba(255, 255, 255, .88);
+    font-family: inherit; font-size: .9rem; font-weight: 500;
+    padding: 8px 15px; border-radius: 999px;
+    transition: background .18s, color .18s;
+  }
+  #tabs button:hover { background: rgba(255, 255, 255, .14); color: #fff; }
+  #tabs button.active {
+    background: #fff; color: var(--primary-dark); font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .14);
+  }
+
+  .nav-side { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .user-pill {
+    background: rgba(255, 255, 255, .16);
+    border: 1px solid rgba(255, 255, 255, .3);
+    color: #fff; font-size: .8rem; font-weight: 500;
+    padding: 6px 14px; border-radius: 999px; white-space: nowrap;
+  }
+  .login-quick-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .quick-login {
+    border: 1px solid rgba(255, 255, 255, .55);
+    background: rgba(255, 255, 255, .12);
+    color: #fff; font-family: inherit; font-size: .84rem; font-weight: 500;
+    padding: 7px 14px; border-radius: 999px;
+    transition: background .18s, transform .18s;
+  }
+  .quick-login:hover { background: #fff; color: var(--primary-dark); transform: translateY(-1px); }
+  .quick-login.admin { background: rgba(0, 0, 0, .16); }
+
+  /* ── Buttons ────────────────────────────────────────────── */
+  .btn {
+    font-family: inherit; font-weight: 600; border-radius: 999px;
+    padding: 11px 24px; border: 1px solid transparent;
+    transition: transform .16s, box-shadow .16s, background .16s;
+  }
+  .btn:disabled, .btn.is-busy { opacity: .65; cursor: progress; transform: none !important; }
+  .btn.primary {
+    background: var(--grad); color: #fff;
+    box-shadow: 0 8px 20px rgba(0, 125, 119, .28);
+  }
+  .btn.primary:hover { color: #fff; transform: translateY(-2px); box-shadow: 0 12px 26px rgba(0, 125, 119, .36); }
+  .btn.secondary {
+    background: var(--primary-pale); color: var(--primary-dark); border-color: #bfe4de;
+  }
+  .btn.secondary:hover { background: #d2ece7; color: var(--primary-dark); }
+  .btn.ghost { background: #fff; color: var(--primary-dark); border-color: var(--line); }
+  .btn.ghost:hover { background: var(--primary-pale); color: var(--primary-dark); }
+  .btn.warn { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
+  .btn.warn:hover { color: #fff; transform: translateY(-2px); }
+  .btn.small { padding: 6px 15px; font-size: .82rem; }
+  .action-row { display: flex; flex-wrap: wrap; gap: 12px; }
+
+  /* ── Panels / cards ─────────────────────────────────────── */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
+    padding: 26px 28px;
+  }
+  .panel.soft {
+    background: #fbfefd;
+    border-radius: var(--radius-sm);
+    box-shadow: none;
+    padding: 20px 22px;
+  }
+  .panel.soft > h3 { font-size: 1.05rem; font-weight: 600; color: var(--primary-dark); margin: 0; }
+
+  .section-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 18px;
+  }
+  .section-head h2 { font-size: 1.45rem; font-weight: 700; margin: 2px 0 6px; }
+  .section-head h3 { font-size: 1.15rem; font-weight: 600; margin: 2px 0 6px; }
+  .section-head p  { color: var(--ink2); font-size: .93rem; margin: 0; }
+  .eyebrow {
+    display: inline-block; font-size: .7rem; font-weight: 700;
+    letter-spacing: .8px; text-transform: uppercase;
+    color: var(--primary); background: var(--primary-pale);
+    padding: 4px 12px; border-radius: 999px;
+  }
+
+  /* Card header in the reference style — gradient strip on top of a panel */
+  .card-header-custom {
+    background: var(--grad);
+    color: #fff; font-weight: 600;
+    padding: 16px 24px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card-header-custom i { font-size: 1.05rem; }
+  .card-header-custom + .panel { border-radius: 0 0 var(--radius) var(--radius); border-top: 0; }
+
+  /* ── Sections / view switching ──────────────────────────── */
+  .section { display: none; }
+  .section.active { display: block; animation: fadeUp .3s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  body:not([data-view="login"]) .hero { display: none; }
+  /* Padding-block only: the left/right padding belongs to .container-xl, and
+     zeroing it makes Bootstrap's negative .row margins overflow the viewport. */
+  .app-main { padding-top: 30px; padding-bottom: 60px; }
+
+  /* ── Hero / landing ─────────────────────────────────────── */
+  /* Layered gradient: a deep blue-green base running corner to corner, an aqua
+     glow behind the photo, and a dark pool under the headline so white text
+     keeps its contrast wherever the base lightens. */
+  .hero-banner {
+    background:
+      radial-gradient(115% 135% at 86% 8%,  rgba(120, 240, 214, .34) 0%, rgba(120, 240, 214, 0) 50%),
+      radial-gradient(85% 120% at 0% 108%,  rgba(0, 38, 46, .40)     0%, rgba(0, 38, 46, 0)     66%),
+      linear-gradient(122deg, #04373d 0%, #005655 32%, #007d77 60%, #17a795 84%, #38c8ae 100%);
+    color: #fff; border-radius: var(--radius);
+    padding: 46px 40px; margin-bottom: 30px;
+    position: relative; overflow: hidden; isolation: isolate;
+    box-shadow: 0 18px 44px rgba(0, 70, 74, .3);
+    display: grid; grid-template-columns: 1.25fr .8fr; gap: 36px; align-items: center;
+  }
+  .hero-banner::before {
+    content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(70% 90% at 50% 120%, rgba(255, 255, 255, .1) 0%, rgba(255, 255, 255, 0) 60%);
+  }
+  .hero-banner::after {
+    content: ''; position: absolute; right: -90px; top: -110px; z-index: 0; pointer-events: none;
+    width: 320px; height: 320px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, 0) 68%);
+  }
+  .hero-copy, .hero-media { position: relative; z-index: 1; }
+  .hero-banner .eyebrow {
+    background: rgba(255, 255, 255, .16); color: #fff;
+    border: 1px solid rgba(255, 255, 255, .26); backdrop-filter: blur(3px);
+  }
+  .hero-banner h1 {
+    font-size: 2.1rem; font-weight: 700; margin: 14px 0 12px;
+    text-shadow: 0 2px 14px rgba(0, 32, 34, .35);
+  }
+  .hero-banner .lead { font-size: 1rem; opacity: .93; margin: 0; }
+  /* The frame carries the glow so the photo blends into the gradient instead
+     of sitting on it as a hard rectangle. */
+  .hero-media {
+    padding: 10px; border-radius: 26px;
+    background: linear-gradient(150deg, rgba(255, 255, 255, .26), rgba(255, 255, 255, .04) 55%, rgba(255, 255, 255, .14));
+    box-shadow: 0 22px 48px rgba(0, 30, 32, .35);
+  }
+  .hero-media img {
+    width: 100%; height: 270px; object-fit: cover; display: block;
+    border-radius: 18px; border: 1px solid rgba(255, 255, 255, .3);
+  }
+  @media (max-width: 900px) {
+    .hero-banner { grid-template-columns: 1fr; gap: 24px; padding: 34px 24px; }
+    .hero-banner h1 { font-size: 1.7rem; }
+    .hero-media img { height: 190px; }
+  }
+
+  /* Photos are decorative: if the network blocks the CDN, the whole card is
+     removed by its onerror handler rather than leaving a broken frame. */
+  .photo-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 30px; }
+  @media (max-width: 860px) { .photo-strip { grid-template-columns: 1fr; } }
+  .photo-card {
+    position: relative; border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--line); background: #fff; box-shadow: var(--card-shadow);
+  }
+  .photo-card img { width: 100%; height: 215px; object-fit: cover; display: block; transition: transform .45s; }
+  .photo-card:hover img { transform: scale(1.06); }
+  .photo-caption {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 20px; color: #fff;
+    background: linear-gradient(to top, rgba(0, 45, 43, .94), rgba(0, 45, 43, .55) 58%, transparent);
+  }
+  .photo-caption strong { display: block; font-size: 1rem; font-weight: 600; }
+  .photo-caption small { font-size: .8rem; opacity: .9; }
+
+  .menu-card {
+    display: block; width: 100%; text-align: center;
+    background: #fff; border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 30px 20px;
+    box-shadow: var(--card-shadow);
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+  }
+  .menu-card:hover { transform: translateY(-5px); box-shadow: var(--hover-shadow); border-color: var(--primary-light); }
+  .menu-icon {
+    width: 68px; height: 68px; margin: 0 auto 16px;
+    border-radius: 22px; display: grid; place-items: center;
+    font-size: 1.7rem; color: #fff; background: var(--grad-soft);
+  }
+  .menu-card.alt .menu-icon { background: linear-gradient(135deg, #3d8bfd, #1d4ed8); }
+  .menu-card.staff .menu-icon { background: linear-gradient(135deg, #d97706, #b45309); }
+  .menu-card strong { display: block; font-size: 1.08rem; font-weight: 600; margin-bottom: 6px; }
+  .menu-card small { color: var(--ink2); font-size: .87rem; }
+
+  .workflow-strip {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .flow-item {
+    display: flex; gap: 12px; align-items: flex-start; text-align: left;
+    background: #fff; border: 1px solid var(--line); border-radius: var(--radius-sm);
+    padding: 16px 18px; width: 100%;
+    transition: border-color .18s, transform .18s;
+  }
+  .flow-item:hover { border-color: var(--primary-light); transform: translateY(-2px); }
+  .flow-num {
+    flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%;
+    background: var(--primary-pale); color: var(--primary-dark);
+    display: grid; place-items: center; font-weight: 700; font-size: .9rem;
+  }
+  .flow-item strong { display: block; font-size: .95rem; font-weight: 600; }
+  .flow-item small { color: var(--ink2); font-size: .82rem; }
+
+  /* ── Forms ──────────────────────────────────────────────── */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: .88rem; font-weight: 600; color: var(--ink); }
+  .field .required { color: var(--high); }
+  .field input, .field select, .field textarea,
+  .thai-dp-sel {
+    font-family: inherit; font-size: .95rem; color: var(--ink);
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px 14px; width: 100%;
+    transition: border-color .16s, box-shadow .16s;
+  }
+  .field textarea { min-height: 92px; resize: vertical; }
+  .field input:focus, .field select:focus, .field textarea:focus, .thai-dp-sel:focus {
+    outline: none; border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(47, 184, 174, .18);
+  }
+  .field.field-error input { border-color: var(--high); box-shadow: 0 0 0 3px rgba(220, 53, 69, .12); }
+  .hint { font-size: .8rem; color: var(--mt); }
+  .form-gap { margin-top: 16px; }
+
+  .grid { display: grid; gap: 16px; }
+  .grid.two   { grid-template-columns: repeat(2, 1fr); }
+  .grid.three { grid-template-columns: repeat(3, 1fr); }
+  .grid.four  { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 860px) {
+    .grid.two, .grid.three, .grid.four { grid-template-columns: 1fr; }
+    .workflow-strip { grid-template-columns: 1fr; }
+  }
+
+  .thai-dp { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 8px; }
+
+  .check-line {
+    display: flex; gap: 10px; align-items: flex-start;
+    margin-top: 18px; font-size: .9rem; color: var(--ink2);
+    background: var(--primary-pale); border-radius: var(--radius-sm); padding: 14px 16px;
+  }
+  .check-line input { margin-top: 4px; accent-color: var(--primary); width: 18px; height: 18px; }
+
+  .check-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  @media (max-width: 720px) { .check-grid { grid-template-columns: 1fr; } }
+  .check {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    padding: 11px 14px; font-size: .9rem; cursor: pointer;
+    transition: border-color .16s, background .16s;
+  }
+  .check:hover { border-color: var(--primary-light); background: #f7fdfc; }
+  .check input { accent-color: var(--primary); width: 18px; height: 18px; margin-top: 2px; flex: 0 0 18px; }
+  .check:has(input:checked) { border-color: var(--primary); background: var(--primary-pale); }
+
+  .notice {
+    background: #f2fbf9; border: 1px solid #cfe9e4; border-left: 4px solid var(--primary);
+    border-radius: 12px; padding: 14px 16px; font-size: .87rem; color: var(--ink2);
+    margin-top: 16px;
+  }
+  .notice-link { color: var(--primary-dark); font-weight: 600; }
+  .success-note {
+    background: #e8f6ee; border: 1px solid #b7e0c6; border-radius: 12px;
+    padding: 14px 16px; margin-top: 16px; font-size: .9rem; color: #14532d;
+  }
+  .danger-note {
+    background: #fdeaec; border: 1px solid #f5c2c7; border-radius: 12px;
+    padding: 14px 16px; margin-top: 16px; font-size: .9rem; color: #842029;
+  }
+  .form-guide, .nurse-reg-banner {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--primary-pale); border-radius: var(--radius-sm);
+    padding: 16px 18px; margin-bottom: 18px;
+  }
+  .form-guide-icon, .nurse-reg-icon {
+    flex: 0 0 40px; width: 40px; height: 40px; border-radius: 12px;
+    background: var(--grad-soft); color: #fff;
+    display: grid; place-items: center; font-weight: 700;
+  }
+  .form-guide strong, .nurse-reg-body h4 { display: block; font-size: .96rem; font-weight: 600; margin: 0 0 3px; }
+  .form-guide span, .nurse-reg-body p { font-size: .86rem; color: var(--ink2); margin: 0; }
+  .nurse-reg-banner { background: #fff7e8; }
+  .nurse-reg-icon { background: linear-gradient(135deg, #f59e0b, #b45309); }
+
+  /* ── Step wizard (reference-style) ──────────────────────── */
+  .form-wizard-steps {
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 20px 8px 14px; margin-bottom: 8px;
+  }
+  .step-item {
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer; background: none; border: 0; padding: 0; flex: 0 0 auto;
+    max-width: 108px;
+  }
+  .step-circle {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: #f0f4f3; border: 2px solid var(--line); color: var(--mt);
+    display: grid; place-items: center; font-weight: 700; margin-bottom: 7px;
+    transition: background .2s, color .2s, box-shadow .2s;
+  }
+  .step-item.active .step-circle {
+    background: var(--grad); color: #fff; border-color: transparent;
+    box-shadow: 0 5px 14px rgba(0, 125, 119, .4);
+  }
+  .step-item.completed .step-circle { background: var(--low); color: #fff; border-color: transparent; }
+  .step-label { font-size: .74rem; font-weight: 600; color: #b3c2c0; text-align: center; line-height: 1.25; }
+  .step-item.active .step-label { color: var(--primary-dark); }
+  .step-item.completed .step-label { color: var(--low); }
+  .step-connector {
+    flex: 1 1 auto; height: 3px; background: #e2eae8;
+    margin: 22px 4px 0; border-radius: 2px; max-width: 70px;
+  }
+  .step-connector.done { background: linear-gradient(to right, var(--low), var(--primary-light)); }
+
+  .wiz-pane { display: none; }
+  .wiz-pane.active { display: block; animation: fadeUp .25s ease; }
+  .wiz-nav {
+    display: flex; justify-content: space-between; gap: 12px;
+    margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line);
+  }
+  /* Step 1 hides the back button; keep the forward button on the right. */
+  .wiz-nav .action-row { margin-left: auto; }
+
+  .screening-progress { margin: 18px 0 4px; }
+  .screening-progress-copy { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .screening-progress-copy strong { font-size: .95rem; color: var(--primary-dark); }
+  .screening-progress-copy span { font-size: .84rem; color: var(--mt); }
+  .progress-track {
+    width: 100%; height: 10px; border: 0; border-radius: 999px;
+    background: #e6efed; appearance: none; -webkit-appearance: none;
+  }
+  .progress-track::-webkit-progress-bar { background: #e6efed; border-radius: 999px; }
+  .progress-track::-webkit-progress-value { background: var(--grad-soft); border-radius: 999px; transition: width .3s; }
+  .progress-track::-moz-progress-bar { background: var(--primary); border-radius: 999px; }
+
+  /* ── Questions ──────────────────────────────────────────── */
+  .question-list { display: grid; gap: 14px; }
+  .question-list-gap { margin-top: 14px; }
+  .section-hint { margin: 4px 0 0; }
+
+  .q-card {
+    background: #fff; border: 1px solid var(--line); border-radius: var(--radius-sm);
+    padding: 16px 18px; transition: border-color .18s, box-shadow .18s;
+  }
+  .q-card:hover { border-color: #bfe4de; box-shadow: 0 6px 18px rgba(0, 90, 85, .07); }
+  .q-card.question-error { border-color: var(--high); background: #fff7f7; box-shadow: 0 0 0 3px rgba(220, 53, 69, .1); }
+  .q-label { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; font-size: .95rem; font-weight: 500; margin: 0 0 12px; }
+  .q-num {
+    flex: 0 0 26px; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--primary-pale); color: var(--primary-dark);
+    display: grid; place-items: center; font-size: .78rem; font-weight: 700;
+  }
+  .q-domain {
+    font-size: .7rem; font-weight: 600; color: var(--primary);
+    background: var(--primary-pale); padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+
+  .q-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .q-opt {
+    font-family: inherit; font-size: .9rem; font-weight: 600;
+    background: #fff; border: 1.5px solid var(--line); color: var(--ink2);
+    border-radius: 12px; padding: 11px 14px;
+    transition: all .16s;
+  }
+  .q-opt:hover { border-color: var(--primary-light); background: #f7fdfc; }
+  .q-opt[data-val="false"].selected { background: #e8f6ee; border-color: var(--low); color: #14532d; }
+  .q-opt[data-val="true"].selected  { background: #fdeaec; border-color: var(--high); color: #842029; }
+
+  .score-guide {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    background: var(--primary-pale); border-radius: 12px;
+    padding: 10px 16px; margin: 12px 0 0; font-size: .84rem; color: var(--ink2);
+  }
+  .score-guide strong { color: var(--primary-dark); }
+
+  .score-btn-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .score-btn {
+    font-family: inherit; font-weight: 700; font-size: 1rem;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: #fff; border: 1.5px solid var(--line); color: var(--ink2);
+    border-radius: 12px; padding: 9px 4px;
+    transition: all .16s;
+  }
+  .score-btn span { font-size: .62rem; font-weight: 500; color: var(--mt); line-height: 1.15; }
+  .score-btn:hover { border-color: var(--primary-light); background: #f7fdfc; }
+  .score-btn.selected { background: var(--grad); border-color: transparent; color: #fff; box-shadow: 0 6px 14px rgba(0, 125, 119, .3); }
+  .score-btn.selected span { color: rgba(255, 255, 255, .85); }
+  @media (max-width: 620px) {
+    .score-btn-row { grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .score-btn { padding: 7px 2px; font-size: .9rem; }
+    .score-btn span { display: none; }
+  }
+
+  /* ── Badges / results ───────────────────────────────────── */
+  .badge {
+    display: inline-block; font-size: .78rem; font-weight: 600;
+    padding: 5px 13px; border-radius: 999px; color: #fff;
+  }
+  .badge.low      { background: var(--low); }
+  .badge.moderate { background: var(--moderate); }
+  .badge.high     { background: var(--high); }
+  .badge.urgent   { background: var(--urgent); }
+  .badge.neutral  { background: var(--neutral); }
+
+  .result-card {
+    border-radius: var(--radius); border: 1px solid var(--line); border-left: 6px solid var(--neutral);
+    background: #fff; padding: 24px 26px; margin-top: 20px; box-shadow: var(--card-shadow);
+  }
+  .result-card.low      { border-left-color: var(--low); }
+  .result-card.moderate { border-left-color: var(--moderate); }
+  .result-card.high     { border-left-color: var(--high); }
+  .result-card.urgent   { border-left-color: var(--urgent); }
+  .result-card h3 { font-size: 1.2rem; font-weight: 700; }
+
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+  .metric {
+    background: #fbfefd; border: 1px solid var(--line); border-radius: var(--radius-sm);
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .metric span { font-size: .8rem; color: var(--mt); }
+  .metric strong { font-size: 1.4rem; font-weight: 700; color: var(--primary-dark); }
+
+  /* ── Dashboard KPIs ─────────────────────────────────────── */
+  .dashboard-kpi {
+    background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px 22px; box-shadow: var(--card-shadow);
+    display: flex; flex-direction: column; gap: 6px;
+    border-top: 4px solid var(--primary);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .dashboard-kpi:hover { transform: translateY(-4px); box-shadow: var(--hover-shadow); }
+  .dashboard-kpi.blue { border-top-color: #3d8bfd; }
+  .dashboard-kpi.teal { border-top-color: var(--primary); }
+  .dashboard-kpi.gold { border-top-color: #d97706; }
+  .dashboard-kpi.red  { border-top-color: var(--high); }
+  .dashboard-kpi-top { display: flex; align-items: center; gap: 10px; font-size: .84rem; color: var(--ink2); font-weight: 600; }
+  .dashboard-kpi-icon {
+    width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center;
+    background: var(--primary-pale); color: var(--primary-dark); font-size: .74rem; font-weight: 700;
+  }
+  .dashboard-kpi.blue .dashboard-kpi-icon { background: #e5efff; color: #1d4ed8; }
+  .dashboard-kpi.gold .dashboard-kpi-icon { background: #fdf0dc; color: #b45309; }
+  .dashboard-kpi.red  .dashboard-kpi-icon { background: #fdeaec; color: #b02a37; }
+  .dashboard-kpi > strong { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+  .dashboard-kpi > small { font-size: .8rem; color: var(--mt); }
+  .loading-card { min-height: 128px; background: linear-gradient(90deg, #f2f7f6 25%, #e8f1ef 50%, #f2f7f6 75%); background-size: 200% 100%; animation: shimmer 1.3s infinite; }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+  .dashboard-hero { margin-bottom: 20px; }
+  .dashboard-hero h2 { font-size: 1.5rem; }
+
+  /* ── Latest screening summary ───────────────────────────── */
+  .latest-screening-summary {
+    display: grid; grid-template-columns: 200px 1fr; gap: 24px;
+    background: #fff; border: 1px solid var(--line); border-left: 6px solid var(--neutral);
+    border-radius: var(--radius); padding: 24px 26px; margin-top: 20px; box-shadow: var(--card-shadow);
+  }
+  .latest-screening-summary.low      { border-left-color: var(--low); }
+  .latest-screening-summary.moderate { border-left-color: var(--moderate); }
+  .latest-screening-summary.high     { border-left-color: var(--high); }
+  .latest-screening-summary.urgent   { border-left-color: var(--urgent); }
+  @media (max-width: 760px) { .latest-screening-summary { grid-template-columns: 1fr; } }
+  .latest-score-block {
+    background: var(--grad); color: #fff; border-radius: var(--radius-sm);
+    padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  }
+  .latest-score-block span { font-size: .8rem; opacity: .9; }
+  .latest-score-block strong { font-size: 2.8rem; font-weight: 700; line-height: 1.1; }
+  .latest-score-block small { font-size: .78rem; opacity: .8; }
+  .latest-summary-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+  .latest-summary-head h3 { font-size: 1.25rem; font-weight: 700; margin: 4px 0 0; }
+  .latest-summary-kicker { font-size: .8rem; color: var(--mt); }
+  .latest-number-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  @media (max-width: 620px) { .latest-number-grid { grid-template-columns: 1fr; } }
+  .latest-number-item {
+    background: #fbfefd; border: 1px solid var(--line); border-radius: 12px;
+    padding: 11px 14px; display: flex; flex-direction: column; gap: 2px;
+  }
+  .latest-number-item span { font-size: .78rem; color: var(--mt); }
+  .latest-number-item strong { font-size: .98rem; color: var(--primary-dark); }
+  .latest-recommendation { margin: 16px 0 0; font-size: .92rem; color: var(--ink2); }
+  .latest-summary-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+
+  /* ── Insight charts ─────────────────────────────────────── */
+  .dashboard-insight-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 20px; }
+  @media (max-width: 900px) { .dashboard-insight-grid { grid-template-columns: 1fr; } }
+  .dashboard-insight-card {
+    background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 22px 24px; box-shadow: var(--card-shadow);
+  }
+  .dashboard-insight-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+  .dashboard-insight-head h3 { font-size: 1.05rem; font-weight: 600; margin: 0; }
+  .dashboard-insight-head span { font-size: .8rem; color: var(--mt); }
+
+  .risk-distribution { display: grid; gap: 12px; }
+  .risk-distribution-row { display: grid; grid-template-columns: 140px 1fr 34px; gap: 12px; align-items: center; }
+  .risk-distribution-label { font-size: .85rem; color: var(--ink2); }
+  .risk-distribution-track { display: block; height: 12px; background: #eef4f3; border-radius: 999px; overflow: hidden; }
+  .risk-distribution-fill { display: block; height: 100%; width: var(--bar-size, 0%); border-radius: 999px; transition: width .5s; }
+  .risk-distribution-fill.low      { background: var(--low); }
+  .risk-distribution-fill.moderate { background: var(--moderate); }
+  .risk-distribution-fill.high     { background: var(--high); }
+  .risk-distribution-fill.urgent   { background: var(--urgent); }
+  .risk-distribution-count { font-size: .88rem; font-weight: 700; color: var(--primary-dark); text-align: right; }
+
+  .osa-history-chart { display: flex; align-items: flex-end; gap: 10px; height: 190px; }
+  .osa-history-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+  .osa-history-value { font-size: .8rem; font-weight: 700; color: var(--primary-dark); }
+  .osa-history-track { flex: 1; width: 100%; display: flex; align-items: flex-end; background: #f2f7f6; border-radius: 10px 10px 4px 4px; }
+  .osa-history-bar { width: 100%; height: var(--bar-size, 4%); background: var(--grad-soft); border-radius: 10px 10px 4px 4px; transition: height .5s; }
+  .osa-history-label { font-size: .7rem; color: var(--mt); text-align: center; word-break: break-word; }
+
+  /* ── Child profile / screening history ──────────────────── */
+  .child-dashboard-list { display: grid; gap: 20px; }
+  .child-profile-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px; background: #fbfefd; }
+  .child-profile-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  .child-profile-head h3 { font-size: 1.2rem; font-weight: 700; margin: 2px 0 0; }
+  .child-profile-kicker { font-size: .78rem; color: var(--mt); }
+  .child-code-pill { background: var(--primary-pale); color: var(--primary-dark); font-size: .78rem; font-weight: 600; padding: 6px 14px; border-radius: 999px; }
+  .child-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .child-info-item { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px; }
+  .child-info-item span { font-size: .76rem; color: var(--mt); }
+  .child-info-item strong { font-size: .92rem; font-weight: 600; }
+  .child-note { background: #fff7e8; border-radius: 12px; padding: 12px 15px; font-size: .87rem; margin-top: 14px; }
+  .child-screening-area { margin-top: 20px; }
+  .child-screening-title { font-size: 1rem; font-weight: 600; color: var(--primary-dark); margin: 0 0 12px; }
+  .child-screening-list { display: grid; gap: 12px; }
+
+  .screening-record { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+  .screening-record > summary {
+    display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 14px 18px; cursor: pointer; list-style: none; background: #fff;
+  }
+  .screening-record > summary::-webkit-details-marker { display: none; }
+  .screening-record[open] > summary { background: var(--primary-pale); }
+  .screening-summary-main { display: flex; align-items: center; gap: 12px; }
+  .screening-summary-index {
+    width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%;
+    background: var(--grad); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .85rem;
+  }
+  .screening-summary-main strong { display: block; font-size: .95rem; font-weight: 600; }
+  .screening-summary-main small { color: var(--mt); font-size: .78rem; }
+  .screening-summary-result { display: flex; align-items: center; gap: 10px; }
+  .screening-summary-score { font-weight: 700; color: var(--primary-dark); font-size: .92rem; }
+  .screening-record-body { padding: 18px; border-top: 1px solid var(--line); display: grid; gap: 18px; }
+  .screening-overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+  .screening-overview-item { background: #fbfefd; border: 1px solid var(--line); border-radius: 12px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px; }
+  .screening-overview-item span { font-size: .76rem; color: var(--mt); }
+  .screening-overview-item strong { font-size: .92rem; font-weight: 600; }
+  .screening-guidance { background: var(--primary-pale); border-radius: 12px; padding: 13px 16px; font-size: .88rem; color: var(--ink2); }
+  .screening-guidance strong { display: block; color: var(--primary-dark); margin-bottom: 3px; }
+  .screening-answer-section { border-top: 1px dashed var(--line); padding-top: 14px; }
+  .screening-answer-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .screening-answer-head h4 { font-size: .95rem; font-weight: 600; margin: 0; }
+  .screening-answer-head span { font-size: .8rem; color: var(--mt); }
+
+  .answer-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  @media (max-width: 780px) { .answer-grid { grid-template-columns: 1fr; } }
+  .answer-row, .osa-answer-row {
+    display: flex; align-items: center; gap: 10px;
+    background: #fbfefd; border: 1px solid var(--line); border-radius: 11px; padding: 9px 12px;
+  }
+  .answer-number {
+    flex: 0 0 24px; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--primary-pale); color: var(--primary-dark);
+    display: grid; place-items: center; font-size: .74rem; font-weight: 700;
+  }
+  .answer-copy { flex: 1; font-size: .86rem; }
+  .answer-status { font-size: .76rem; font-weight: 600; padding: 3px 11px; border-radius: 999px; white-space: nowrap; }
+  .answer-status.yes     { background: #fdeaec; color: #842029; }
+  .answer-status.no      { background: #e8f6ee; color: #14532d; }
+  .answer-status.unknown { background: #eef1f0; color: var(--mt); }
+
+  .osa-answer-list { display: grid; gap: 8px; }
+  .osa-answer-copy { flex: 1; display: flex; flex-direction: column; }
+  .osa-answer-copy strong { font-size: .88rem; font-weight: 500; }
+  .osa-answer-copy small { font-size: .74rem; color: var(--mt); }
+  .osa-answer-score { text-align: center; min-width: 68px; display: flex; flex-direction: column; }
+  .osa-answer-score strong { font-size: 1.05rem; color: var(--primary-dark); }
+  .osa-answer-score span { font-size: .7rem; color: var(--mt); }
+
+  /* ── Tables ─────────────────────────────────────────────── */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-sm); background: #fff; }
+  .table-wrap table { width: 100%; border-collapse: collapse; font-size: .87rem; margin: 0; }
+  .table-wrap th {
+    background: var(--grad); color: #fff; font-weight: 600; text-align: left;
+    padding: 12px 14px; white-space: nowrap;
+  }
+  .table-wrap td { padding: 11px 14px; border-top: 1px solid var(--line); vertical-align: middle; }
+  .table-wrap tbody tr:hover { background: #f7fdfc; }
+
+  .admin-layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
+  @media (max-width: 1000px) { .admin-layout { grid-template-columns: 1fr; } }
+
+  /* ── Video tips ─────────────────────────────────────────── */
+  .video-tips { list-style: none; padding: 0; margin: 18px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 780px) { .video-tips { grid-template-columns: 1fr; } }
+  .video-tip { display: flex; gap: 12px; align-items: flex-start; background: #fbfefd; border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; font-size: .85rem; color: var(--ink2); }
+  .video-tip > span {
+    flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--grad-soft); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .8rem;
+  }
+  .video-tip strong { display: block; color: var(--ink); font-weight: 600; }
+  .file-meta { font-size: .8rem; color: var(--mt); }
+
+  /* ── Login modal ────────────────────────────────────────── */
+  #login { display: none !important; }
+  body.login-modal-open #login {
+    display: flex !important; position: fixed; inset: 0; z-index: 1080;
+    align-items: center; justify-content: center; padding: 20px;
+    background: rgba(10, 40, 38, .55); backdrop-filter: blur(4px);
+    animation: fadeUp .2s ease;
+  }
+  .modal-inner {
+    position: relative; width: 100%; max-width: 960px;
+    max-height: 92vh; overflow-y: auto;
+    background: #fff; border-radius: var(--radius); padding: 30px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, .3);
+  }
+  .modal-close-btn {
+    position: absolute; top: 14px; right: 16px; z-index: 2;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #f2f7f6; border: 1px solid var(--line); color: var(--ink2);
+    font-size: 1rem; line-height: 1;
+  }
+  .modal-close-btn:hover { background: var(--high); color: #fff; border-color: transparent; }
+  .login-grid { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 860px) { .login-grid { grid-template-columns: 1fr; } .modal-inner { padding: 22px 18px; } }
+  /* openLoginModal() stamps data-tab; show only the panel the user asked for. */
+  #login[data-tab] .modal-inner { max-width: 560px; }
+  #login[data-tab] .login-grid { grid-template-columns: 1fr; }
+  #login[data-tab="parent"] .panel.admin-access,
+  #login[data-tab="admin"] .panel.parent-access { display: none; }
+  .panel.parent-access { border-top: 4px solid var(--primary); }
+  .panel.admin-access  { border-top: 4px solid #d97706; }
+
+  /* ── Toast ──────────────────────────────────────────────── */
+  #toast {
+    display: none; position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
+    z-index: 1090; max-width: min(520px, 92vw);
+    background: var(--ink); color: #fff; font-size: .9rem;
+    padding: 13px 22px; border-radius: 14px; box-shadow: 0 14px 34px rgba(0, 0, 0, .3);
+    white-space: pre-line; text-align: center;
+  }
+
+  /* ── Footer ─────────────────────────────────────────────── */
+  .app-footer { background: var(--grad); color: rgba(255, 255, 255, .9); padding: 34px 0; margin-top: 40px; }
+  .footer-inner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .footer-inner { grid-template-columns: 1fr; } }
+  .footer-brand { display: flex; gap: 12px; align-items: center; }
+  .footer-logo {
+    width: 46px; height: 46px; flex: 0 0 46px; border-radius: 14px;
+    background: rgba(255, 255, 255, .18); border: 1px solid rgba(255, 255, 255, .3);
+    display: grid; place-items: center; font-weight: 700; color: #fff;
+  }
+  .footer-title { font-weight: 600; color: #fff; }
+  .footer-sub, .footer-dev-info, .footer-note { font-size: .82rem; opacity: .85; }
+  .footer-dev-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .8px; opacity: .8; }
+  .footer-dev-name { font-weight: 600; color: #fff; }
+  </style>
+
+</head>
+
+<body data-view="login" data-role="parent">
+
+  <!-- ════ NAVBAR ════ -->
+  <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container-xl">
+      <a class="navbar-brand" href="javascript:void(0)" onclick="showTab('login')">
+        <span class="brand-mark">OSA</span>
+        <span class="brand-text">
+          <small>Thanyaburi Hospital · Pediatric Screening</small>
+          <strong>ระบบคัดกรองเด็กนอนกรนออนไลน์</strong>
+        </span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-label="เมนู">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMain">
+        <div id="tabs" class="tabs ms-lg-auto my-2 my-lg-0" aria-label="เมนูระบบ">
+          <button type="button" data-tab="child"     onclick="showTab('child')"><i class="fa-solid fa-child-reaching me-1"></i> ข้อมูลเด็ก</button>
+          <button type="button" data-tab="screening" onclick="showTab('screening')"><i class="fa-solid fa-clipboard-list me-1"></i> คัดกรองออนไลน์</button>
+          <button type="button" data-tab="video"     onclick="showTab('video')"><i class="fa-solid fa-video me-1"></i> อัปโหลดวิดีโอ</button>
+          <button type="button" data-tab="dashboard" onclick="showTab('dashboard')"><i class="fa-solid fa-chart-simple me-1"></i> Dashboard</button>
+        </div>
+        <div class="nav-side ms-lg-3">
+          <div id="loginQuickActions" class="login-quick-actions">
+            <button type="button" class="quick-login parent" onclick="showTab('child')"><i class="fa-solid fa-user-plus me-1"></i> ลงทะเบียนเด็ก</button>
+            <button type="button" class="quick-login parent" onclick="openLoginModal('parent')"><i class="fa-solid fa-magnifying-glass me-1"></i> ประเมินครั้งต่อไป</button>
+            <button type="button" class="quick-login admin" onclick="openLoginModal('admin')"><i class="fa-solid fa-user-doctor me-1"></i> เจ้าหน้าที่</button>
+          </div>
+          <div id="userPill" class="user-pill">ยังไม่ได้เข้าสู่ระบบ</div>
+          <button type="button" id="logoutButton" class="btn secondary small hidden" onclick="logout()">ออกจากระบบ</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ════ MAIN ════ -->
+  <main class="container-xl app-main">
+
+    <!-- ── Landing (login view only) ── -->
+    <div class="hero">
+      <div class="hero-banner">
+        <div class="hero-copy">
+          <span class="eyebrow">โรงพยาบาลธัญบุรี · กุมารเวชกรรม</span>
+          <h1>สังเกตอาการนอนกรน คัดกรองได้ตั้งแต่วันนี้</h1>
+          <p class="lead">
+            ตอบแบบประเมินมาตรฐาน OSA-18 พร้อมส่งวิดีโอการนอนให้ทีมคลินิกติดตาม
+            ใช้เวลาไม่นานและทำต่อเนื่องได้ทุกครั้งที่ต้องการประเมินอาการ
+          </p>
+        </div>
+        <div class="hero-media">
+          <img src="https://images.unsplash.com/photo-1491013516836-7db643ee125a?auto=format&fit=crop&w=800&q=80"
+               alt="เด็กเล็กในความดูแลของผู้ปกครอง" width="800" height="540"
+               onerror="this.closest('.hero-media').remove()">
+        </div>
+      </div>
+
+
+      <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+          <button type="button" class="menu-card" onclick="showTab('child')">
+            <span class="menu-icon"><i class="fa-solid fa-user-plus"></i></span>
+            <strong>ลงทะเบียนเด็กใหม่</strong>
+            <small>กรอกข้อมูลเด็ก เลขบัตรประชาชน และวันเกิด แล้วเริ่มทำแบบคัดกรองได้ทันที ไม่ต้องเข้าสู่ระบบ</small>
+          </button>
+        </div>
+        <div class="col-lg-4">
+          <button type="button" class="menu-card alt" onclick="openLoginModal('parent')">
+            <span class="menu-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <strong>ประเมินครั้งต่อไป</strong>
+            <small>เคยลงทะเบียนแล้ว ค้นหาด้วยเลขบัตรประชาชนหรือชื่อเด็ก พร้อมวันเกิด เพื่อประเมินซ้ำและดูผลย้อนหลัง</small>
+          </button>
+        </div>
+        <div class="col-lg-4">
+          <button type="button" class="menu-card staff" onclick="openLoginModal('admin')">
+            <span class="menu-icon"><i class="fa-solid fa-user-doctor"></i></span>
+            <strong>เจ้าหน้าที่ / แพทย์</strong>
+            <small>พยาบาล ENT และแพทย์ เข้าสู่ระบบเพื่อลงทะเบียนเด็ก ทบทวนเคส และดู Dashboard ทั้งหมด</small>
+          </button>
+        </div>
+      </div>
+      <div class="photo-strip">
+        <figure class="photo-card">
+          <img src="https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&w=700&q=80"
+               alt="เด็กเล็กนอนหลับใต้ผ้าห่ม" width="700" height="470" loading="lazy"
+               onerror="this.closest('.photo-card').remove()">
+          <figcaption class="photo-caption">
+            <strong>สังเกตการนอนหลับ</strong>
+            <small>เสียงกรน หยุดหายใจ สะดุ้งตื่น และการหายใจทางปาก</small>
+          </figcaption>
+        </figure>
+        <figure class="photo-card">
+          <img src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=700&q=80"
+               alt="เด็กเล่นในเวลากลางวัน" width="700" height="470" loading="lazy"
+               onerror="this.closest('.photo-card').remove()">
+          <figcaption class="photo-caption">
+            <strong>พฤติกรรมเวลากลางวัน</strong>
+            <small>ง่วงหลับกลางวัน สมาธิสั้น อารมณ์แปรปรวน ปลุกตื่นยาก</small>
+          </figcaption>
+        </figure>
+        <figure class="photo-card">
+          <img src="https://images.unsplash.com/photo-1476703993599-0035a21b17a9?auto=format&fit=crop&w=700&q=80"
+               alt="ผู้ปกครองดูแลลูกที่บ้าน" width="700" height="470" loading="lazy"
+               onerror="this.closest('.photo-card').remove()">
+          <figcaption class="photo-caption">
+            <strong>ผู้ปกครองประเมินเองที่บ้าน</strong>
+            <small>ทำแบบคัดกรอง 5 ตอน และส่งวิดีโอให้ทีมคลินิกดูต่อ</small>
+          </figcaption>
+        </figure>
+      </div>
+
+
+      <div class="panel">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">ขั้นตอนสำหรับผู้ปกครอง</span>
+            <h2>ทำเองที่บ้านได้ใน 3 ขั้นตอน</h2>
+            <p>ไม่ต้องสมัครสมาชิก ใช้เลขบัตรประชาชนเด็กและวันเกิดเป็นตัวยืนยันตัวตน</p>
+          </div>
+        </div>
+        <div class="workflow-strip">
+          <button type="button" class="flow-item" onclick="showTab('child')">
+            <span class="flow-num">1</span>
+            <span><strong><i class="fa-solid fa-pen-to-square me-1"></i> ลงทะเบียนเด็ก</strong><small>ข้อมูลเด็ก + บัตรประชาชน + วันเกิด</small></span>
+          </button>
+          <button type="button" class="flow-item" onclick="goWorkflow('screening')">
+            <span class="flow-num">2</span>
+            <span><strong><i class="fa-solid fa-clipboard-list me-1"></i> ตอบ OSA-18</strong><small>แบบคัดกรองการนอนหลับ 5 ตอน</small></span>
+          </button>
+          <button type="button" class="flow-item" onclick="goWorkflow('video')">
+            <span class="flow-num">3</span>
+            <span><strong><i class="fa-solid fa-video me-1"></i> อัปโหลดวิดีโอ</strong><small>ให้ทีมคลินิกช่วยทบทวน</small></span>
+          </button>
+        </div>
+        <div class="notice">
+          <i class="fa-solid fa-circle-info me-1"></i>
+          ระบบนี้เป็นเครื่องมือคัดกรองและติดตาม ไม่ใช่การวินิจฉัยแทนแพทย์
+          หากเด็กมีอาการหยุดหายใจ หายใจลำบาก หรือปลุกตื่นยากผิดปกติ ควรพบแพทย์โดยเร็ว
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ LOGIN MODAL ════ -->
+    <section id="login" class="section">
+      <div class="modal-inner">
+        <button type="button" class="modal-close-btn" onclick="closeLoginModal()" aria-label="ปิด"><i class="fa-solid fa-xmark"></i></button>
+        <div class="grid login-grid">
+
+          <!-- Parent lookup -->
+          <article class="panel parent-access">
+            <div class="section-head">
+              <div>
+                <span class="eyebrow">ประเมินครั้งต่อไป</span>
+                <h2>ค้นหาเด็กเพื่อประเมินเพิ่ม</h2>
+                <p>เคยลงทะเบียนไว้แล้ว? กรอก <b>เลขบัตรประชาชนเด็ก หรือ ชื่อ-สกุลเด็ก</b> อย่างใดอย่างหนึ่ง พร้อมวันเกิด เพื่อค้นหาลูกของคุณและทำแบบประเมินครั้งต่อไป</p>
+              </div>
+            </div>
+            <div class="grid">
+              <div class="field">
+                <label for="childCid">เลขบัตรประชาชนเด็ก (13 หลัก) หรือ ชื่อ-สกุลเด็ก</label>
+                <input id="childCid" type="text" autocomplete="off" placeholder="เลขบัตร 13 หลัก หรือ ชื่อ-สกุล / ชื่อเล่น">
+              </div>
+              <div class="field">
+                <label>วันเกิดเด็ก (วัน / เดือน / พ.ศ.)</label>
+                <div id="childBirthDatePicker" class="thai-dp-wrap"></div>
+                <input type="hidden" id="childBirthDate">
+              </div>
+              <button type="button" id="parentLookupButton" class="btn primary" onclick="loginWithCid()">
+                <i class="fa-solid fa-magnifying-glass me-1"></i> ค้นหา &amp; เริ่มประเมิน
+              </button>
+            </div>
+            <div class="notice">
+              ยังไม่เคยลงทะเบียน? <a href="javascript:void(0)" onclick="showTab('child')" class="notice-link">ลงทะเบียนเด็กใหม่ที่นี่</a>
+            </div>
+          </article>
+
+          <!-- Admin login -->
+          <article class="panel admin-access">
+            <div class="section-head">
+              <div>
+                <span class="eyebrow">Staff Console</span>
+                <h2>เข้าสู่ระบบเจ้าหน้าที่</h2>
+                <p>สำหรับจัดการผู้ใช้ เคสคัดกรอง สถานะวิดีโอ และภาพรวมข้อมูลทั้งหมด</p>
+              </div>
+            </div>
+            <div class="grid">
+              <div class="field">
+                <label for="adminUsername">Username</label>
+                <input id="adminUsername" type="text" autocomplete="username" placeholder="admin">
+              </div>
+              <div class="field">
+                <label for="adminPassword">Password</label>
+                <input id="adminPassword" type="password" autocomplete="current-password" placeholder="••••">
+              </div>
+              <button type="button" id="adminLoginButton" class="btn warn" onclick="adminLogin()">
+                <i class="fa-solid fa-right-to-bracket me-1"></i> เข้าสู่ระบบ
+              </button>
+            </div>
+            <p class="hint mt">ใช้บัญชีเจ้าหน้าที่ที่ผู้ดูแลระบบกำหนดให้</p>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ CHILD PROFILE ════ -->
+    <section id="child" class="section">
+      <div class="card-header-custom"><i class="fa-solid fa-child-reaching"></i> ลงทะเบียนข้อมูลเด็ก</div>
+      <article class="panel">
+        <div class="section-head">
+          <div>
+            <h2>ข้อมูลเด็กและการยินยอม</h2>
+            <p>กรอกข้อมูลเด็ก เลขบัตรประชาชน และวันเกิด เพื่อเริ่มทำแบบคัดกรองได้ทันที — เลขบัตร + วันเกิด จะใช้สำหรับค้นหาเมื่อกลับมาประเมินครั้งต่อไป</p>
+          </div>
+          <button type="button" class="btn secondary staff-only" onclick="loadDashboard(true)"><i class="fa-solid fa-rotate me-1"></i> รีเฟรชข้อมูล</button>
+        </div>
+
+        <div class="form-guide" role="note">
+          <div class="form-guide-icon"><i class="fa-solid fa-check"></i></div>
+          <div>
+            <strong>เตรียมข้อมูลเพียง 4 อย่าง</strong>
+            <span>เลขบัตรประชาชนเด็ก วันเกิด ชื่อเล่น และการยินยอม ส่วนข้อมูลสุขภาพอื่นกรอกเท่าที่ทราบได้</span>
+          </div>
+        </div>
+
+        <div class="staff-only nurse-reg-banner">
+          <div class="nurse-reg-icon"><i class="fa-solid fa-user-nurse"></i></div>
+          <div class="nurse-reg-body">
+            <h4>โหมดเจ้าหน้าที่ — ลงทะเบียนเด็กในระบบ</h4>
+            <p>กรอกข้อมูลเด็กให้ครบรวมถึง CID และข้อมูลคลินิก (ทอนซิล / X-ray) ก่อนบอกผู้ปกครองให้เข้าสู่ระบบ ผู้ปกครองจะใช้ <strong>เลขบัตรประชาชน + วันเกิดเด็ก</strong> เพื่อเข้าถึงข้อมูลและตอบแบบคัดกรอง</p>
+          </div>
+        </div>
+
+        <div class="field staff-only form-gap">
+          <label for="childCode">รหัสผู้ป่วย / HN (ถ้ามี)</label>
+          <input id="childCode" type="text" placeholder="เช่น HN123456" autocomplete="off">
+          <span class="hint">สำหรับเจ้าหน้าที่ใช้เชื่อมกับข้อมูลคลินิก หากเว้นว่างระบบจะสร้างรหัสให้อัตโนมัติ</span>
+        </div>
+
+        <div class="field form-gap">
+          <label for="childCidNumber">เลขบัตรประชาชนเด็ก (13 หลัก) <span class="required">*</span></label>
+          <input id="childCidNumber" type="text" inputmode="numeric" maxlength="17"
+                 placeholder="x-xxxx-xxxxx-xx-x" autocomplete="off" aria-describedby="childCidHint">
+          <span class="hint" id="childCidHint">จำเป็น — ระบบจัดรูปแบบเลขบัตรให้อัตโนมัติ และไม่แสดงเลขจริงบน Dashboard</span>
+        </div>
+
+        <div class="grid two mt">
+          <div class="field">
+            <label for="nickname">ชื่อเล่น <span class="required">*</span></label>
+            <input id="nickname" type="text" placeholder="เช่น น้องต้น" autocomplete="nickname">
+          </div>
+          <div class="field">
+            <label for="childName">ชื่อ-สกุลเด็ก</label>
+            <input id="childName" type="text" placeholder="ชื่อและนามสกุล" autocomplete="name">
+          </div>
+        </div>
+
+        <div class="grid four mt">
+          <div class="field">
+            <label for="sex">เพศ</label>
+            <select id="sex">
+              <option value="">เลือก</option>
+              <option value="male">ชาย</option>
+              <option value="female">หญิง</option>
+              <option value="other">อื่น ๆ</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>วันเกิด (วัน / เดือน / พ.ศ.) <span class="required">*</span></label>
+            <div id="birthDatePicker" class="thai-dp-wrap"></div>
+            <input type="hidden" id="birthDate">
+          </div>
+          <div class="field">
+            <label for="ageYears">อายุ (ปี)</label>
+            <input id="ageYears" type="number" min="0" max="18" step="0.1">
+          </div>
+          <div class="field clinical-field">
+            <label for="tonsilSize">ขนาดทอนซิล</label>
+            <select id="tonsilSize">
+              <option value="">ไม่ทราบ / ยังไม่ประเมิน</option>
+              <option value="1+">1+</option>
+              <option value="2+">2+</option>
+              <option value="3+">3+</option>
+              <option value="4+">4+</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid three mt">
+          <div class="field">
+            <label for="weightKg">น้ำหนัก (kg)</label>
+            <input id="weightKg" type="number" min="0" step="0.1">
+          </div>
+          <div class="field">
+            <label for="heightCm">ส่วนสูง (cm)</label>
+            <input id="heightCm" type="number" min="0" step="0.1">
+          </div>
+          <div class="field clinical-field">
+            <label for="adenoidXrayResult">ผล X-ray adenoid</label>
+            <select id="adenoidXrayResult">
+              <option value="">ไม่ทราบ / ยังไม่ตรวจ</option>
+              <option value="normal">ปกติ</option>
+              <option value="enlarged">โต / สงสัยโต</option>
+              <option value="not-done">ยังไม่ได้ตรวจ</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field mt">
+          <label for="childNotes">หมายเหตุ / โรคร่วม / สิ่งที่ผู้ปกครองกังวล</label>
+          <textarea id="childNotes" placeholder="เช่น ภูมิแพ้ หอบหืด พฤติกรรมระหว่างวัน การนอนหลับ"></textarea>
+        </div>
+
+        <label class="check-line">
+          <input id="consentOk" type="checkbox">
+          <span>ผู้ปกครองรับทราบวัตถุประสงค์ของการคัดกรองออนไลน์และยินยอมให้บันทึกข้อมูลเพื่อการดูแลรักษา / ติดตาม</span>
+        </label>
+
+        <div class="mt action-row">
+          <button type="button" class="btn primary" onclick="saveChild()"><i class="fa-solid fa-floppy-disk me-1"></i> ลงทะเบียน &amp; ไปทำแบบคัดกรอง</button>
+          <button type="button" class="btn ghost staff-only" onclick="showTab('screening')">ไปหน้าคัดกรอง</button>
+        </div>
+      </article>
+    </section>
+
+    <!-- ════ SCREENING (5-step wizard) ════ -->
+    <section id="screening" class="section">
+      <div class="card-header-custom"><i class="fa-solid fa-clipboard-list"></i> แบบคัดกรองเด็กนอนกรน</div>
+      <article class="panel">
+
+        <div class="form-wizard-steps" id="screeningSteps">
+          <button type="button" class="step-item active" data-step="1">
+            <span class="step-circle"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <span class="step-label">สัญญาณสำคัญ</span>
+          </button>
+          <span class="step-connector"></span>
+          <button type="button" class="step-item" data-step="2">
+            <span class="step-circle"><i class="fa-solid fa-notes-medical"></i></span>
+            <span class="step-label">ปัจจัยเสี่ยง</span>
+          </button>
+          <span class="step-connector"></span>
+          <button type="button" class="step-item" data-step="3">
+            <span class="step-circle"><i class="fa-solid fa-bed"></i></span>
+            <span class="step-label">การนอน &amp; ร่างกาย</span>
+          </button>
+          <span class="step-connector"></span>
+          <button type="button" class="step-item" data-step="4">
+            <span class="step-circle"><i class="fa-solid fa-face-smile"></i></span>
+            <span class="step-label">อารมณ์ &amp; กลางวัน</span>
+          </button>
+          <span class="step-connector"></span>
+          <button type="button" class="step-item" data-step="5">
+            <span class="step-circle"><i class="fa-solid fa-heart-pulse"></i></span>
+            <span class="step-label">ความกังวลผู้ดูแล</span>
+          </button>
+        </div>
+
+        <div class="screening-progress" aria-live="polite">
+          <div class="screening-progress-copy">
+            <strong id="screeningProgressLabel">ตอบแล้ว 0 จาก 24 ข้อ</strong>
+            <span id="screeningProgressDetail">สัญญาณสำคัญ 0/6 · OSA-18 0/18</span>
+          </div>
+          <progress class="progress-track" aria-label="ความคืบหน้าแบบคัดกรอง" max="24" value="0">0 จาก 24 ข้อ</progress>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="wiz-pane active" data-pane="1">
+          <div class="field mt">
+            <label for="screenChild">เลือกเด็ก</label>
+            <select id="screenChild"></select>
+            <span class="hint">หากยังไม่มีรายชื่อ ให้ลงทะเบียนข้อมูลเด็กก่อน</span>
+          </div>
+          <section class="panel soft mt">
+            <h3>สัญญาณสำคัญระหว่างนอน</h3>
+            <p class="hint section-hint">เลือกคำตอบให้ครบทุกข้อ</p>
+            <div id="coreQuestions" class="question-list question-list-gap"></div>
+          </section>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="wiz-pane" data-pane="2">
+          <section class="panel soft mt">
+            <h3>ปัจจัยเสี่ยงที่ควรแจ้งทีมคลินิก</h3>
+            <p class="hint section-hint">ติ๊กเฉพาะรายการที่มีหรือสงสัยว่ามี — ข้ามได้หากไม่มีรายการใดเลย</p>
+            <div id="riskFactors" class="check-grid question-list-gap"></div>
+          </section>
+        </div>
+
+        <!-- Steps 3–5: OSA-18 grouped by domain -->
+        <div class="wiz-pane" data-pane="3">
+          <section class="panel soft mt">
+            <h3>OSA-18 · การรบกวนการนอน และอาการทางร่างกาย</h3>
+            <p class="hint section-hint">ให้คะแนน 1–7 ตามความถี่ / ความรุนแรงของอาการในช่วงที่ผ่านมา</p>
+            <div class="score-guide" role="group" aria-label="คำอธิบายระดับคะแนน">
+              <span><strong>1</strong> ไม่เกิดขึ้นเลย</span><span><strong>4</strong> บางครั้ง</span><span><strong>7</strong> ตลอดเวลา</span>
+            </div>
+            <div class="question-list question-list-gap" data-osa-slot="3"></div>
+          </section>
+        </div>
+        <div class="wiz-pane" data-pane="4">
+          <section class="panel soft mt">
+            <h3>OSA-18 · อารมณ์ ความรู้สึก และปัญหาเวลากลางวัน</h3>
+            <p class="hint section-hint">ให้คะแนน 1–7 ตามความถี่ / ความรุนแรงของอาการในช่วงที่ผ่านมา</p>
+            <div class="score-guide" role="group" aria-label="คำอธิบายระดับคะแนน">
+              <span><strong>1</strong> ไม่เกิดขึ้นเลย</span><span><strong>4</strong> บางครั้ง</span><span><strong>7</strong> ตลอดเวลา</span>
+            </div>
+            <div class="question-list question-list-gap" data-osa-slot="4"></div>
+          </section>
+        </div>
+        <div class="wiz-pane" data-pane="5">
+          <section class="panel soft mt">
+            <h3>OSA-18 · ความกังวลของผู้ดูแล</h3>
+            <p class="hint section-hint">ให้คะแนน 1–7 ตามความถี่ / ความรุนแรงของอาการในช่วงที่ผ่านมา</p>
+            <div class="score-guide" role="group" aria-label="คำอธิบายระดับคะแนน">
+              <span><strong>1</strong> ไม่เกิดขึ้นเลย</span><span><strong>4</strong> บางครั้ง</span><span><strong>7</strong> ตลอดเวลา</span>
+            </div>
+            <div class="question-list question-list-gap" data-osa-slot="5"></div>
+          </section>
+        </div>
+
+        <!-- Source container for renderOsa18(); cards are moved into the panes above -->
+        <div id="osa18" class="hidden"></div>
+
+        <div class="wiz-nav">
+          <button type="button" class="btn ghost" id="wizPrev"><i class="fa-solid fa-chevron-left me-1"></i> ย้อนกลับ</button>
+          <div class="action-row">
+            <button type="button" class="btn primary" id="wizNext">ถัดไป <i class="fa-solid fa-chevron-right ms-1"></i></button>
+            <button type="button" class="btn primary hidden" id="wizSubmit" onclick="submitScreening()"><i class="fa-solid fa-circle-check me-1"></i> ประเมินผล</button>
+          </div>
+        </div>
+
+        <div id="screeningResult"></div>
+      </article>
+    </section>
+
+    <!-- ════ VIDEO ════ -->
+    <section id="video" class="section">
+      <div class="card-header-custom"><i class="fa-solid fa-video"></i> อัปโหลดวิดีโอการนอน</div>
+      <article class="panel">
+        <div class="section-head">
+          <div>
+            <h2>ส่งคลิปให้ทีมคลินิกช่วยดู</h2>
+            <p>อัปโหลดคลิปขณะหลับเพื่อให้ทีมคลินิกทบทวน รองรับ MP4, WebM และ MOV ขนาดไม่เกิน 50 MB</p>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <div class="field">
+            <label for="videoScreening">เลือกผลคัดกรองที่เกี่ยวข้อง</label>
+            <select id="videoScreening"></select>
+          </div>
+          <div class="field">
+            <label for="videoFile">ไฟล์วิดีโอ</label>
+            <input id="videoFile" type="file" accept="video/*">
+            <div id="videoFileMeta" class="file-meta" aria-live="polite">ยังไม่ได้เลือกไฟล์</div>
+          </div>
+        </div>
+
+        <ul class="video-tips">
+          <li class="video-tip"><span>1</span><div><strong>เห็นช่วงอกและใบหน้า</strong>จัดมุมให้สังเกตการหายใจได้</div></li>
+          <li class="video-tip"><span>2</span><div><strong>ได้ยินเสียงชัด</strong>วางโทรศัพท์ใกล้พอและลดเสียงรบกวน</div></li>
+          <li class="video-tip"><span>3</span><div><strong>คลิปสั้น กระชับ</strong>เลือกช่วงที่มีอาการชัดเจนที่สุด</div></li>
+        </ul>
+
+        <div class="notice">
+          <i class="fa-solid fa-shield-halved me-1"></i>
+          แนะนำคลิปสั้นที่เห็นการหายใจและได้ยินเสียงกรนชัดเจน หลีกเลี่ยงข้อมูลส่วนบุคคลอื่นที่ไม่จำเป็นในวิดีโอ
+        </div>
+
+        <button type="button" class="btn primary mt" onclick="uploadVideo()"><i class="fa-solid fa-cloud-arrow-up me-1"></i> อัปโหลดวิดีโอ</button>
+        <div id="videoResult"></div>
+      </article>
+    </section>
+
+    <!-- ════ DASHBOARD ════ -->
+    <section id="dashboard" class="section">
+      <div class="section-head dashboard-hero">
+        <div>
+          <span class="eyebrow">โรงพยาบาลธัญบุรี · Pediatric OSA Screening</span>
+          <h2>Dashboard ผลคัดกรองเด็กนอนกรน</h2>
+          <p>ดูข้อมูลเด็ก คะแนน OSA-18 ระดับความเสี่ยง และคำตอบแบบคัดกรองครบทุกข้อในที่เดียว</p>
+        </div>
+        <button type="button" class="btn secondary" onclick="loadDashboard(true)"><i class="fa-solid fa-rotate me-1"></i> รีเฟรช Dashboard</button>
+      </div>
+
+      <div id="metrics" class="metric-grid"></div>
+      <section id="dashboardInsights" class="hidden" aria-label="กราฟสรุปผลคัดกรอง"></section>
+      <div id="latestScreeningSummary" class="hidden" aria-live="polite"></div>
+
+      <article id="childScreeningPanel" class="panel mt">
+        <div class="section-head">
+          <div>
+            <h3 id="dashboardContentTitle">ข้อมูลเด็กและประวัติผลคัดกรอง</h3>
+            <p id="dashboardContentDescription">เลือกเปิดผลแต่ละครั้งเพื่อดูสัญญาณสำคัญ ปัจจัยเสี่ยง และ OSA-18 รายข้อ</p>
+          </div>
+        </div>
+        <div id="parentTable"></div>
+      </article>
+
+      <article id="clinicalDashboard" class="panel mt hidden">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Clinical Review</span>
+            <h3>ภาพรวมเคสสำหรับทีมคลินิก</h3>
+            <p>แสดงเคสล่าสุดและสถานะที่ควรทบทวน</p>
+          </div>
+        </div>
+      </article>
+
+      <article id="adminPanel" class="panel mt hidden">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Admin Management</span>
+            <h3>จัดการระบบทั้งหมด</h3>
+            <p>admin สามารถจัดการผู้ใช้ เคสคัดกรอง และสถานะวิดีโอได้จากหน้านี้</p>
+          </div>
+        </div>
+
+        <div class="admin-layout">
+          <div class="stack">
+
+            <section class="panel soft">
+              <h3>จัดการเคสคัดกรอง</h3>
+              <div class="field mt">
+                <label for="adminScreeningId">Screening ID</label>
+                <input id="adminScreeningId" type="text" placeholder="เลือกจากตารางหรือกรอกเอง">
+              </div>
+              <div class="field mt">
+                <label for="adminClinicalStatus">สถานะทบทวน</label>
+                <select id="adminClinicalStatus">
+                  <option value="new">new</option>
+                  <option value="reviewing">reviewing</option>
+                  <option value="follow-up">follow-up</option>
+                  <option value="referred">referred</option>
+                  <option value="closed">closed</option>
+                </select>
+              </div>
+              <div class="field mt">
+                <label for="adminReviewerNotes">บันทึกผู้ทบทวน</label>
+                <textarea id="adminReviewerNotes"></textarea>
+              </div>
+              <button type="button" class="btn primary mt" onclick="saveAdminScreeningReview()">บันทึกสถานะเคส</button>
+            </section>
+
+            <section class="panel soft">
+              <h3>จัดการผู้ใช้</h3>
+              <div class="field mt">
+                <label for="adminUserId">User ID</label>
+                <input id="adminUserId" type="text" placeholder="เลือกจากตาราง">
+              </div>
+              <div class="field mt">
+                <label for="adminDisplayName">ชื่อแสดงผล</label>
+                <input id="adminDisplayName" type="text">
+              </div>
+              <div class="grid two mt">
+                <div class="field">
+                  <label for="adminUserRole">Role</label>
+                  <select id="adminUserRole">
+                    <option value="parent">parent</option>
+                    <option value="nurse">nurse</option>
+                    <option value="ent">ent</option>
+                    <option value="doctor">doctor</option>
+                    <option value="admin">admin</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="adminUserStatus">Status</label>
+                  <select id="adminUserStatus">
+                    <option value="active">active</option>
+                    <option value="disabled">disabled</option>
+                  </select>
+                </div>
+              </div>
+              <button type="button" class="btn primary mt" onclick="saveAdminUser()">บันทึกผู้ใช้</button>
+            </section>
+
+            <section class="panel soft">
+              <h3>จัดการวิดีโอ</h3>
+              <div class="field mt">
+                <label for="adminVideoId">Video ID</label>
+                <input id="adminVideoId" type="text" placeholder="เลือกจากตาราง">
+              </div>
+              <div class="field mt">
+                <label for="adminVideoReviewStatus">สถานะ review</label>
+                <select id="adminVideoReviewStatus">
+                  <option value="pending-human-review">pending-human-review</option>
+                  <option value="reviewing">reviewing</option>
+                  <option value="accepted">accepted</option>
+                  <option value="needs-human-review">needs-human-review</option>
+                  <option value="rejected">rejected</option>
+                </select>
+              </div>
+              <div class="field mt">
+                <label for="adminVideoNotes">บันทึกวิดีโอ</label>
+                <textarea id="adminVideoNotes"></textarea>
+              </div>
+              <button type="button" class="btn primary mt" onclick="saveAdminVideo()">บันทึกสถานะวิดีโอ</button>
+            </section>
+
+          </div>
+
+          <section class="panel soft">
+            <h3>ข้อมูลรวมสำหรับ Admin</h3>
+            <div id="adminDashboard" class="mt"></div>
+          </section>
+        </div>
+      </article>
+    </section>
+
+  </main>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <footer class="app-footer">
+    <div class="container-xl footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo">OSA</div>
+        <div>
+          <div class="footer-title">ระบบคัดกรองเด็กนอนกรนออนไลน์</div>
+          <div class="footer-sub">Snoring Child OSA Screening · Prototype</div>
+        </div>
+      </div>
+      <div class="footer-dev">
+        <div class="footer-dev-label">ผู้พัฒนาระบบ</div>
+        <div class="footer-dev-name">นายแพทย์ชุติพนธ์ บุญมาก</div>
+        <div class="footer-dev-info">นายแพทย์ชำนาญการ (กุมารแพทย์)</div>
+        <div class="footer-dev-info">โรงพยาบาลธัญบุรี อำเภอธัญบุรี จังหวัดปทุมธานี · ปี 2569</div>
+      </div>
+      <div class="footer-note">
+        ระบบนี้เป็นเครื่องมือคัดกรองเบื้องต้นเท่านั้น<br>
+        ไม่ใช่การวินิจฉัยโรคหรือทดแทนการพบแพทย์
+      </div>
+    </div>
+  </footer>
+
+  <script src="app-config.js"></script>
+  <script>
+    const state = {
+      token: '',
+      user: null,
+      schema: null,
+      dashboard: null,
+      dashboardPromise: null,
+      dashboardLoadedAt: 0,
+      clinical: null,
+      admin: null,
+      latestScreeningId: '',
+      latestScreeningResult: null
+    };
+
+
+
+    const riskLabels = {
+      'low': 'ความเสี่ยงต่ำ',
+      'moderate': 'ความเสี่ยงปานกลาง',
+      'high': 'ความเสี่ยงสูง',
+      'urgent-review': 'ควรทบทวนโดยเร็ว'
+    };
+
+    window.addEventListener('load', boot);
+
+    function boot() {
+      initUxEnhancements();
+      state.token = localStorage.getItem('snoringToken') || '';
+      callServer('apiBootstrap', [state.token])
+        .then(res => {
+          state.schema = res.schema || fallbackSchema();
+          state.user = res.user || null;
+          if (!state.user) localStorage.removeItem('snoringToken');
+          renderSchema();
+          updateUserPill();
+          showTab(state.user ? 'dashboard' : 'login');
+        })
+        .catch((error) => {
+          state.schema = fallbackSchema();
+          renderSchema();
+          updateUserPill();
+          showTab('login');
+          toast(error.message || 'เชื่อมต่อระบบไม่สำเร็จ กรุณาลองใหม่');
+        });
+    }
+
+    async function callServer(name, args) {
+      if (location.protocol === 'file:') throw new Error('กรุณาเปิดผ่านลิงก์เว็บไซต์ หรือรัน npm start แล้วเปิด http://localhost:5173');
+      const config = window.SNORING_CONFIG || {};
+      const direct = config.apiMode === 'supabase';
+      const endpoint = direct ? config.supabaseUrl.replace(/\/+$/, '') + '/functions/v1/snoring-api' : '/api';
+      const headers = { 'Content-Type': 'application/json' };
+      if (direct) headers.apikey = config.publishableKey;
+      let response;
+      try {
+        response = await fetch(endpoint, {
+          method: 'POST', headers,
+          body: JSON.stringify({ method: name, args: args || [] }),
+          signal: AbortSignal.timeout(35000)
+        });
+      } catch {
+        throw new Error('ติดต่อเว็บไซต์ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตและลองใหม่');
+      }
+      let data;
+      try { data = await response.json(); }
+      catch { throw new Error('การเชื่อมต่อเว็บไซต์หมดอายุหรือไม่พร้อม กรุณารีเฟรชหน้าเว็บแล้วลองใหม่'); }
+      if (!response.ok || !data.ok) throw new Error(data.message || 'เชื่อมต่อ Supabase ไม่สำเร็จ');
+      return data.result;
+    }
+
+    function goWorkflow(tab) {
+      if (tab === 'child') { showTab('child'); return; }   // ลงทะเบียนเด็กได้โดยไม่ต้องเข้าสู่ระบบ
+      if (tab !== 'login' && !state.user) {
+        toast('กรุณาลงทะเบียนเด็ก หรือค้นหาด้วยเลขบัตร + วันเกิดก่อนเริ่มประเมิน');
+        showTab('child');
+        return;
+      }
+      if (tab === 'dashboard' && state.user && !hasClinicalAccess()) {
+        toast('Dashboard นี้จะแสดงข้อมูลของบัญชีผู้ปกครอง หากต้องการ Clinical Dashboard ต้องใช้สิทธิ์ nurse/ENT/doctor/admin');
+      }
+      showTab(tab);
+    }
+
+    function showTab(tab, options) {
+      document.body.dataset.view = tab;
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.toggle('active', section.id === tab);
+      });
+      document.querySelectorAll('#tabs button').forEach(button => {
+        button.classList.toggle('active', button.dataset.tab === tab);
+      });
+      if (tab === 'dashboard' && state.user && !(options && options.skipDashboardLoad)) loadDashboard();
+      if (!document.body.classList.contains('login-modal-open')) {
+        window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      }
+    }
+
+    function updateUserPill() {
+      const pill = document.getElementById('userPill');
+      const tabs = document.getElementById('tabs');
+      const logoutButton = document.getElementById('logoutButton');
+      const loginQuickActions = document.getElementById('loginQuickActions');
+      if (!state.user) {
+        pill.textContent = 'ยังไม่ได้เข้าสู่ระบบ';
+        tabs.style.display = 'none';
+        if (loginQuickActions) loginQuickActions.classList.remove('hidden');
+        logoutButton.classList.add('hidden');
+        /* ผู้เยี่ยมชมทั่วไป = โหมดผู้ปกครอง → ซ่อนช่องเฉพาะเจ้าหน้าที่/คลินิก */
+        document.body.dataset.role = 'parent';
+        document.body.classList.add('anon');   /* ยังไม่ล็อกอิน → คงแถบหัวเว็บไว้ */
+        return;
+      }
+      document.body.classList.remove('anon');
+      const name = state.user.displayName || state.user.email || state.user.userId;
+      const roleLabel = { parent:'ผู้ปกครอง', nurse:'พยาบาล', doctor:'หมอ', ent:'หมอ ENT', admin:'Admin' };
+      pill.textContent = name + ' · ' + (roleLabel[state.user.role] || state.user.role);
+      tabs.style.display = 'flex';
+      if (loginQuickActions) loginQuickActions.classList.add('hidden');
+      logoutButton.classList.remove('hidden');
+      document.body.dataset.role = state.user.role;
+    }
+
+    function loginWithCid() {
+      const query = val('childCid');
+      const birthDate = val('childBirthDate');
+      if (!query)
+        return toast('กรุณากรอกเลขบัตรประชาชน หรือชื่อ-สกุลของเด็ก');
+      if (!birthDate)
+        return toast('กรุณาเลือกวันเกิดของเด็ก');
+      const loginButton = document.getElementById('parentLookupButton');
+      setButtonBusy(loginButton, true, 'กำลังค้นหาข้อมูล...');
+      toast('กำลังค้นหาข้อมูลเด็ก...');
+      callServer('loginParentLookup', [query, birthDate])
+        .then(res => {
+          state.token = res.token;
+          state.user = res.user;
+          localStorage.setItem('snoringToken', state.token);
+          updateUserPill();
+          toast('พบข้อมูลเด็กแล้ว กำลังตรวจสอบผลล่าสุด');
+          return loadDashboard();
+        })
+        .then(() => {
+          const hasScreening = Boolean(state.dashboard && state.dashboard.screenings && state.dashboard.screenings.length);
+          if (hasScreening) {
+            toast('พบผลคัดกรองเดิม กำลังแสดง Dashboard');
+            showTab('dashboard', { skipDashboardLoad: true });
+          } else {
+            showTab('screening');
+          }
+        })
+        .catch(err => toast(err.message || String(err)))
+        .finally(() => setButtonBusy(loginButton, false));
+    }
+
+    function adminLogin() {
+      const username = val('adminUsername');
+      const password = val('adminPassword');
+      if (!username || !password) return toast('กรุณากรอก username และ password');
+      const loginButton = document.getElementById('adminLoginButton');
+      setButtonBusy(loginButton, true, 'กำลังเข้าสู่ระบบ...');
+      toast('กำลังเข้าสู่ระบบ admin...');
+      callServer('loginAdmin', [username, password])
+        .then(res => {
+          state.token = res.token;
+          state.user = res.user;
+          localStorage.setItem('snoringToken', state.token);
+          updateUserPill();
+          toast('เข้าสู่ระบบ admin สำเร็จ');
+          showTab('dashboard');
+        })
+        .catch(err => toast(err.message || String(err)))
+        .finally(() => setButtonBusy(loginButton, false));
+    }
+
+    function logout(showMessage) {
+      if (state.token) callServer('revokeSession', [state.token]).catch(() => {});
+      state.token = '';
+      state.user = null;
+      state.dashboard = null;
+      state.dashboardPromise = null;
+      state.dashboardLoadedAt = 0;
+      state.clinical = null;
+      state.admin = null;
+      state.latestScreeningResult = null;
+      localStorage.removeItem('snoringToken');
+      updateUserPill();
+      showTab('login');
+      renderChildOptions();
+      document.getElementById('metrics').innerHTML = '';
+      document.getElementById('parentTable').innerHTML = '';
+      document.getElementById('clinicalDashboard').classList.add('hidden');
+      document.getElementById('adminPanel').classList.add('hidden');
+      if (showMessage !== false) toast('ออกจากระบบแล้ว');
+    }
+
+    function renderSchema() {
+      if (!state.schema) state.schema = fallbackSchema();
+      renderCoreQuestions();
+      renderRiskFactors();
+      renderOsa18();
+      updateScreeningProgress();
+    }
+
+    function renderCoreQuestions() {
+      const target = document.getElementById('coreQuestions');
+      const questions = state.schema.coreQuestions || [];
+      target.innerHTML = questions.map((item, i) => `
+        <div class="q-card">
+          <p class="q-label"><span class="q-num">${i + 1}</span>${safe(item.label)}</p>
+          <div class="q-btn-row">
+            <button type="button" class="q-opt" data-core="${safeAttr(item.key)}" data-val="false" aria-pressed="false" onclick="pickQOpt(this)">✓ ไม่มี / ไม่ใช่</button>
+            <button type="button" class="q-opt" data-core="${safeAttr(item.key)}" data-val="true" aria-pressed="false" onclick="pickQOpt(this)">⚠ มี / ใช่</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function pickQOpt(btn) {
+      const key = btn.dataset.core;
+      document.querySelectorAll(`.q-opt[data-core="${key}"]`).forEach(b => {
+        b.classList.remove('selected');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('selected');
+      btn.setAttribute('aria-pressed', 'true');
+      btn.closest('.q-card')?.classList.remove('question-error');
+      updateScreeningProgress();
+    }
+
+    function renderRiskFactors() {
+      const target = document.getElementById('riskFactors');
+      const risks = state.schema.riskFactors || [];
+      target.innerHTML = risks.map(item => `
+        <label class="check">
+          <input type="checkbox" data-risk="${safeAttr(item.key)}">
+          <span>${safe(item.label)}</span>
+        </label>
+      `).join('');
+    }
+
+    const OSA_SHORT = ['ไม่เลย','แทบไม่','น้อยมาก','บางครั้ง','บ่อยพอควร','บ่อยมาก','ทุกวัน'];
+
+    function renderOsa18() {
+      const target = document.getElementById('osa18');
+      const items = state.schema.osa18Items || [];
+      target.innerHTML = items.map((item, index) => `
+        <div class="q-card">
+          <p class="q-label">
+            <span class="q-num">${index + 1}</span>
+            ${safe(item.label)}
+            <span class="q-domain">${safe(item.domain)}</span>
+          </p>
+          <div class="score-btn-row">
+            ${[1,2,3,4,5,6,7].map(v => `
+              <button type="button" class="score-btn" data-osa="${safeAttr(item.key)}" data-val="${v}" aria-pressed="false" onclick="pickScoreBtn(this)">
+                ${v}<span>${OSA_SHORT[v-1]}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function pickScoreBtn(btn) {
+      const key = btn.dataset.osa;
+      document.querySelectorAll(`.score-btn[data-osa="${key}"]`).forEach(b => {
+        b.classList.remove('selected');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('selected');
+      btn.setAttribute('aria-pressed', 'true');
+      btn.closest('.q-card')?.classList.remove('question-error');
+      updateScreeningProgress();
+    }
+
+    function updateScreeningProgress() {
+      const coreAnswered = document.querySelectorAll('.q-opt.selected[data-core]').length;
+      const osaAnswered = document.querySelectorAll('.score-btn.selected[data-osa]').length;
+      const coreTotal = (state.schema && state.schema.coreQuestions || []).length || 6;
+      const osaTotal = (state.schema && state.schema.osa18Items || []).length || 18;
+      const answered = coreAnswered + osaAnswered;
+      const total = coreTotal + osaTotal;
+      const percent = total ? Math.round((answered / total) * 100) : 0;
+      const label = document.getElementById('screeningProgressLabel');
+      const detail = document.getElementById('screeningProgressDetail');
+      const track = document.querySelector('.progress-track');
+      if (label) label.textContent = answered === total ? 'ตอบครบแล้ว พร้อมประเมินผล' : `ตอบแล้ว ${answered} จาก ${total} ข้อ`;
+      if (detail) detail.textContent = `สัญญาณสำคัญ ${coreAnswered}/${coreTotal} · OSA-18 ${osaAnswered}/${osaTotal}`;
+      if (track) {
+        track.max = total;
+        track.value = answered;
+        track.textContent = `${answered} จาก ${total} ข้อ (${percent}%)`;
+      }
+    }
+
+    function markUnansweredQuestions(selector, keyName) {
+      const keys = new Set();
+      document.querySelectorAll(selector).forEach(button => keys.add(button.dataset[keyName]));
+      keys.forEach(key => {
+        const selected = document.querySelector(`${selector}.selected[data-${keyName}="${key}"]`);
+        const first = document.querySelector(`${selector}[data-${keyName}="${key}"]`);
+        if (!selected && first) first.closest('.q-card')?.classList.add('question-error');
+      });
+      const firstError = document.querySelector('.q-card.question-error');
+      if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function saveChild() {
+      if (!document.getElementById('consentOk').checked) return toast('กรุณายืนยันความยินยอมก่อนบันทึก');
+
+      const payload = {
+        childCode: val('childCode'),
+        nickname: val('nickname'),
+        childName: val('childName'),
+        sex: val('sex'),
+        birthDate: val('birthDate'),
+        ageYears: val('ageYears'),
+        weightKg: val('weightKg'),
+        heightCm: val('heightCm'),
+        tonsilSize: val('tonsilSize'),
+        adenoidXrayResult: val('adenoidXrayResult'),
+        childCidNumber: val('childCidNumber').replace(/[-\s]/g,''),
+        notes: val('childNotes'),
+        consentVersion: 'v1',
+        comorbidities: {}
+      };
+
+      if (!payload.childCode && !payload.nickname && !payload.childName) {
+        return toast('กรุณาระบุชื่อเล่นหรือชื่อ-สกุลเด็กอย่างน้อยหนึ่งรายการ');
+      }
+
+      /* ── ผู้ปกครองยังไม่ได้เข้าระบบ: ลงทะเบียนเด็กใหม่แบบ public แล้ว auto-login ── */
+      if (!state.token) {
+        if (!/^\d{13}$/.test(payload.childCidNumber))
+          return toast('กรุณากรอกเลขบัตรประชาชนเด็ก 13 หลักให้ครบถ้วน');
+        if (!payload.birthDate)
+          return toast('กรุณาเลือกวันเกิดของเด็ก');
+        toast('กำลังลงทะเบียนเด็ก...');
+        callServer('registerChildPublic', [payload])
+          .then(res => {
+            state.token = res.token;
+            state.user = res.user;
+            localStorage.setItem('snoringToken', state.token);
+            updateUserPill();
+            toast('ลงทะเบียนเด็กสำเร็จ เริ่มทำแบบคัดกรองได้เลย');
+            return loadDashboard();
+          })
+          .then(() => showTab('screening'))
+          .catch(err => toast(err.message || String(err)));
+        return;
+      }
+
+      /* ── มี session อยู่แล้ว (เจ้าหน้าที่ หรือผู้ปกครองที่ค้นหาแล้ว) ── */
+      toast('กำลังบันทึกข้อมูลเด็ก...');
+      callServer('saveChildProfile', [state.token, payload])
+        .then(() => {
+          toast('บันทึกข้อมูลเด็กเรียบร้อย');
+          return loadDashboard(true);
+        })
+        .then(() => showTab('screening'))
+        .catch(err => toast(err.message || String(err)));
+    }
+
+    function submitScreening() {
+      if (!state.token) { toast('กรุณาลงทะเบียนเด็ก หรือค้นหาด้วยเลขบัตร + วันเกิดก่อน'); return showTab('child'); }
+      const childId = val('screenChild');
+      if (!childId) return toast('กรุณาเลือกเด็ก');
+
+      const coreAnswers = {};
+      let missingCore = false;
+      const coreKeys = new Set();
+      document.querySelectorAll('.q-opt[data-core]').forEach(b => coreKeys.add(b.dataset.core));
+      coreKeys.forEach(key => {
+        const sel = document.querySelector(`.q-opt.selected[data-core="${key}"]`);
+        if (!sel) missingCore = true;
+        else coreAnswers[key] = sel.dataset.val === 'true';
+      });
+      if (missingCore) {
+        markUnansweredQuestions('.q-opt[data-core]', 'core');
+        return toast('ยังตอบสัญญาณสำคัญไม่ครบ ระบบทำกรอบสีแดงไว้ให้แล้ว');
+      }
+
+      const riskFactors = {};
+      document.querySelectorAll('[data-risk]').forEach(input => {
+        riskFactors[input.dataset.risk] = input.checked;
+      });
+
+      const osa18Answers = {};
+      let missingOsa = false;
+      const osaKeys = new Set();
+      document.querySelectorAll('.score-btn[data-osa]').forEach(b => osaKeys.add(b.dataset.osa));
+      osaKeys.forEach(key => {
+        const sel = document.querySelector(`.score-btn.selected[data-osa="${key}"]`);
+        if (!sel) missingOsa = true;
+        else osa18Answers[key] = Number(sel.dataset.val);
+      });
+      if (missingOsa) {
+        markUnansweredQuestions('.score-btn[data-osa]', 'osa');
+        return toast('ยังตอบ OSA-18 ไม่ครบ ระบบทำกรอบสีแดงไว้ให้แล้ว');
+      }
+
+      const payload = { childId, coreAnswers, riskFactors, osa18Answers };
+      toast('กำลังประเมินผล...');
+      callServer('submitScreening', [state.token, payload])
+        .then(res => {
+          const screeningId = res.screeningId || (res.screening && res.screening.screeningId) || '';
+          const score = res.score || res;
+          renderScreeningResult(score, screeningId);
+          state.latestScreeningResult = {
+            score: score,
+            screening: res.screening || { screeningId: screeningId, childId: childId, submittedAt: new Date().toISOString() }
+          };
+          state.dashboardLoadedAt = 0;
+          renderLatestScreeningSummary(null, state.latestScreeningResult);
+          toast('ประเมินเสร็จแล้ว กำลังแสดง Dashboard');
+          showTab('dashboard');
+        })
+        .catch(err => toast(err.message || String(err)));
+    }
+
+    function renderScreeningResult(score, screeningId) {
+      if (!score) return;
+      state.latestScreeningId = screeningId || state.latestScreeningId;
+      const level = score.riskLevel || 'neutral';
+      const levelClass = riskClass(level);
+      document.getElementById('screeningResult').innerHTML = `
+        <div class="result-card ${levelClass}">
+          <span class="badge ${levelClass}">${riskText(level)}</span>
+          <h3 class="mt">ผลประเมินเบื้องต้น</h3>
+          <div class="grid three mt">
+            <div class="metric"><span>OSA-18 Total</span><strong>${safe(score.osa18Total)}</strong></div>
+            <div class="metric"><span>กลุ่มคะแนน OSA-18</span><strong>${safe(scoreGroupText(score.osa18Group))}</strong></div>
+            <div class="metric"><span>Screening ID</span><strong style="font-size:14px">${safe(screeningId || '')}</strong></div>
+          </div>
+          <p style="margin-top:14px;color:var(--ink2)">${safe(score.recommendation)}</p>
+          <button type="button" class="btn secondary mt" onclick="showTab('video')">อัปโหลดวิดีโอประกอบผลนี้</button>
+        </div>
+      `;
+      if (screeningId) {
+        setTimeout(() => {
+          const videoSelect = document.getElementById('videoScreening');
+          if (videoSelect) videoSelect.value = screeningId;
+        }, 0);
+      }
+    }
+
+    async function uploadVideo() {
+      if (!state.token) { toast('กรุณาเข้าสู่ระบบก่อน'); return; }
+      const file = document.getElementById('videoFile').files[0];
+      const screeningId = val('videoScreening');
+      if (!file || !screeningId) return toast('กรุณาเลือกผลคัดกรองและวิดีโอ');
+      try {
+        toast('กำลังอัปโหลดวิดีโอ...');
+        const prepared = await callServer('prepareVideoUpload', [state.token, { screeningId, fileName: file.name, mimeType: file.type, sizeBytes: file.size }]);
+        const uploaded = await fetch(prepared.uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+        if (!uploaded.ok) throw new Error('อัปโหลดวิดีโอไม่สำเร็จ');
+        const result = await callServer('completeVideoUpload', [state.token, prepared.videoId]);
+        const link = document.createElement('a');
+        link.href = result.video.url; link.target = '_blank'; link.rel = 'noopener'; link.textContent = 'เปิดวิดีโอ (ลิงก์มีอายุ 10 นาที)';
+        document.getElementById('videoResult').replaceChildren(link);
+        toast('อัปโหลดวิดีโอเรียบร้อย รอเจ้าหน้าที่ทบทวน');
+        await loadDashboard(true);
+      } catch (error) { toast(error.message); }
+    }
+
+    async function openVideo(encodedId) {
+      const viewer = window.open('about:blank', '_blank');
+      if (viewer) viewer.opener = null;
+      try {
+        const url = await callServer('getVideoUrl', [state.token, decodeURIComponent(encodedId)]);
+        if (viewer) viewer.location.assign(url);
+        else toast('กรุณาอนุญาตหน้าต่างใหม่เพื่อเปิดวิดีโอ');
+      } catch (error) {
+        if (viewer) viewer.close();
+        toast(error.message);
+      }
+    }
+
+    function loadDashboard(forceRefresh) {
+      if (!state.token || !state.user) {
+        renderChildOptions();
+        return Promise.resolve();
+      }
+      const cacheIsFresh = state.dashboard && state.dashboardLoadedAt && (Date.now() - state.dashboardLoadedAt < 30000);
+      if (!forceRefresh && cacheIsFresh) {
+        renderDashboard(state.dashboard);
+        return Promise.resolve(state.dashboard);
+      }
+      if (state.dashboardPromise) return state.dashboardPromise;
+      if (!state.dashboard) renderDashboardLoading();
+
+      let task;
+      if (isAdmin()) {
+        const adminTask = loadAdmin(forceRefresh).then(() => {
+          if (!state.admin) return;
+          state.dashboard = dashboardFromAdmin(state.admin);
+          state.dashboardLoadedAt = Date.now();
+          renderDashboard(state.dashboard);
+          if (state.admin.clinical) renderClinicalFromAdmin(state.admin.clinical);
+        });
+        task = adminTask;
+      } else {
+        task = callServer('listParentDashboard', [state.token, Boolean(forceRefresh)])
+          .then(data => {
+            state.dashboard = data;
+            state.dashboardLoadedAt = Date.now();
+            renderDashboard(data);
+            return hasClinicalAccess() ? loadClinical(forceRefresh) : null;
+          });
+      }
+
+      state.dashboardPromise = task
+        .catch(err => {
+          toast(err.message || String(err));
+        })
+        .finally(() => {
+          state.dashboardPromise = null;
+        });
+      return state.dashboardPromise;
+    }
+
+    function renderDashboardLoading() {
+      const metrics = document.getElementById('metrics');
+      const insights = document.getElementById('dashboardInsights');
+      const table = document.getElementById('parentTable');
+      if (metrics) {
+        metrics.classList.remove('hidden');
+        metrics.innerHTML = [1,2,3,4].map(() => '<div class="dashboard-kpi loading-card" aria-hidden="true"></div>').join('');
+      }
+      if (insights) insights.className = 'hidden';
+      if (table) table.innerHTML = '<div class="notice">กำลังเตรียมข้อมูลเด็กและผลคัดกรอง...</div>';
+    }
+
+    function dashboardFromAdmin(data) {
+      const metrics = data.metrics || {};
+      return {
+        ok: true,
+        children: data.children || [],
+        screenings: data.screenings || [],
+        videos: data.videos || [],
+        metrics: {
+          children: metrics.totalChildren || 0,
+          screenings: metrics.totalScreenings || 0,
+          highRisk: metrics.highRisk || 0
+        }
+      };
+    }
+
+    function renderLatestScreeningSummary(data, immediateResult) {
+      const target = document.getElementById('latestScreeningSummary');
+      if (!target) return;
+
+      const source = data || state.dashboard || {};
+      const screenings = source.screenings || [];
+      const children = source.children || [];
+      const screening = immediateResult && immediateResult.screening
+        ? immediateResult.screening
+        : screenings[0];
+      const score = immediateResult && immediateResult.score
+        ? immediateResult.score
+        : screening;
+
+      if (!screening || !score) {
+        target.innerHTML = '';
+        target.className = 'hidden';
+        return;
+      }
+
+      const child = children.find(item => item.childId === screening.childId) || {};
+      const childLabel = child.nickname || child.childName || child.childCode || 'เด็กที่ประเมินล่าสุด';
+      const hasCurrentInList = screenings.some(item => item.screeningId === screening.screeningId);
+      const previousForChild = screenings.filter(item => item.childId === screening.childId).length;
+      const attemptNo = Math.max(1, previousForChild + (hasCurrentInList ? 0 : 1));
+      const riskLevel = score.riskLevel || screening.riskLevel || 'neutral';
+      const levelClass = riskClass(riskLevel);
+      const total = Number(score.osa18Total || 0);
+      const submittedAt = screening.submittedAt || new Date().toISOString();
+      const recommendation = score.recommendation || screening.recommendation || '';
+      const clinicalStatus = screening.clinicalStatus || 'new';
+
+      target.className = `latest-screening-summary ${levelClass}`;
+      target.innerHTML = `
+        <div class="latest-score-block">
+          <span>คะแนน OSA-18 ล่าสุด</span>
+          <strong>${safe(total)}</strong>
+          <small>คะแนนเต็ม 126</small>
+        </div>
+        <div>
+          <div class="latest-summary-head">
+            <div>
+              <div class="latest-summary-kicker">ประเมินเสร็จแล้ว · ${safe(formatDate(submittedAt))}</div>
+              <h3>${safe(childLabel)}</h3>
+            </div>
+            <span class="badge ${levelClass}">${safe(riskText(riskLevel))}</span>
+          </div>
+          <div class="latest-number-grid">
+            <div class="latest-number-item"><span>การประเมิน</span><strong>ครั้งที่ ${safe(attemptNo)}</strong></div>
+            <div class="latest-number-item"><span>กลุ่มคะแนน</span><strong>${safe(scoreGroupText(score.osa18Group))}</strong></div>
+            <div class="latest-number-item"><span>ระดับความเสี่ยง</span><strong>${safe(riskText(riskLevel))}</strong></div>
+          </div>
+          <p class="latest-recommendation">${safe(recommendation)}</p>
+          <div class="latest-summary-actions">
+            <span class="badge neutral">สถานะ: ${safe(clinicalStatusText(clinicalStatus))}</span>
+            <button type="button" class="btn ghost small" onclick="showTab('screening')">ประเมินอีกครั้ง</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChildOptions() {
+      const children = (state.dashboard && state.dashboard.children) || [];
+      const childOptions = children.length
+        ? children.map(child => {
+          const label = child.nickname || child.childCode || child.childName || child.childId;
+          return `<option value="${safeAttr(child.childId)}">${safe(label)}</option>`;
+        }).join('')
+        : '<option value="">ยังไม่มีข้อมูลเด็ก</option>';
+      document.getElementById('screenChild').innerHTML = childOptions;
+
+      const screenings = (state.dashboard && state.dashboard.screenings) || [];
+      const screeningOptions = screenings.length
+        ? screenings.map(row => {
+          return `<option value="${safeAttr(row.screeningId)}">${safe(formatDate(row.submittedAt))} · ${safe(riskText(row.riskLevel))} · ${safe(row.screeningId)}</option>`;
+        }).join('')
+        : '<option value="">ยังไม่มีผลคัดกรอง</option>';
+      document.getElementById('videoScreening').innerHTML = screeningOptions;
+      if (state.latestScreeningId && screenings.some(row => row.screeningId === state.latestScreeningId)) {
+        document.getElementById('videoScreening').value = state.latestScreeningId;
+      }
+    }
+
+    function normaliseBooleanAnswer(value) {
+      if (value === true || value === 1 || value === '1' || value === 'true') return true;
+      if (value === false || value === 0 || value === '0' || value === 'false') return false;
+      return null;
+    }
+
+    function dashboardValue(value, suffix) {
+      if (value === undefined || value === null || value === '') return '-';
+      return `${value}${suffix || ''}`;
+    }
+
+    function sexText(value) {
+      return ({ male: 'ชาย', female: 'หญิง', other: 'อื่น ๆ' })[value] || value || '-';
+    }
+
+    function adenoidText(value) {
+      return ({ normal: 'ปกติ', enlarged: 'โต / สงสัยโต', 'not-done': 'ยังไม่ได้ตรวจ' })[value] || value || 'ไม่ทราบ / ยังไม่ตรวจ';
+    }
+
+    function formatDateOnly(value) {
+      if (!value) return '-';
+      const date = new Date(value);
+      if (isNaN(date.getTime())) return value;
+      return date.toLocaleDateString('th-TH', { dateStyle: 'medium' });
+    }
+
+    function osaDomainText(value) {
+      return ({
+        'Sleep disturbance': 'การรบกวนการนอน',
+        'Physical suffering': 'อาการทางร่างกาย',
+        'Emotional distress': 'อารมณ์และความรู้สึก',
+        'Daytime problems': 'ปัญหาเวลากลางวัน',
+        'Caregiver concern': 'ความกังวลของผู้ดูแล'
+      })[value] || value || '-';
+    }
+
+    function renderChildInfoItem(label, value) {
+      return `<div class="child-info-item"><span>${safe(label)}</span><strong>${safe(dashboardValue(value))}</strong></div>`;
+    }
+
+    function renderBinaryAnswers(items, answers, yesText, noText) {
+      const source = answers || {};
+      return (items || []).map((item, index) => {
+        const hasValue = Object.prototype.hasOwnProperty.call(source, item.key);
+        const answer = hasValue ? normaliseBooleanAnswer(source[item.key]) : null;
+        const answerClass = answer === true ? 'yes' : answer === false ? 'no' : 'unknown';
+        const answerText = answer === true ? yesText : answer === false ? noText : 'ไม่มีข้อมูล';
+        return `
+          <div class="answer-row">
+            <span class="answer-number">${safe(index + 1)}</span>
+            <span class="answer-copy">${safe(item.label)}</span>
+            <span class="answer-status ${answerClass}">${safe(answerText)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderOsaAnswers(items, answers) {
+      const source = answers || {};
+      return (items || []).map((item, index) => {
+        const rawScore = Object.prototype.hasOwnProperty.call(source, item.key) ? Number(source[item.key]) : NaN;
+        const validScore = Number.isFinite(rawScore) && rawScore >= 1 && rawScore <= 7;
+        return `
+          <div class="osa-answer-row">
+            <span class="answer-number">${safe(index + 1)}</span>
+            <span class="osa-answer-copy">
+              <strong>${safe(item.label)}</strong>
+              <small>${safe(osaDomainText(item.domain))}</small>
+            </span>
+            <span class="osa-answer-score">
+              <strong>${validScore ? safe(rawScore) : '-'}</strong>
+              <span>${validScore ? safe(OSA_SHORT[rawScore - 1]) : 'ไม่มีข้อมูล'}</span>
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderScreeningRecord(row, index, total) {
+      const coreItems = (state.schema && state.schema.coreQuestions) || [];
+      const riskItems = (state.schema && state.schema.riskFactors) || [];
+      const osaItems = (state.schema && state.schema.osa18Items) || [];
+      const corePositive = coreItems.filter(item => normaliseBooleanAnswer((row.coreAnswers || {})[item.key]) === true).length;
+      const riskPositive = riskItems.filter(item => normaliseBooleanAnswer((row.riskFactors || {})[item.key]) === true).length;
+      const attemptNo = Math.max(1, total - index);
+      const notes = row.reviewerNotes
+        ? `<div class="screening-guidance"><strong>บันทึกจากทีมคลินิก</strong>${safe(row.reviewerNotes)}</div>`
+        : '';
+
+      return `
+        <details class="screening-record" ${index === 0 ? 'open' : ''}>
+          <summary>
+            <span class="screening-summary-main">
+              <span class="screening-summary-index">${safe(attemptNo)}</span>
+              <span><strong>ผลคัดกรองครั้งที่ ${safe(attemptNo)}</strong><small>${safe(formatDate(row.submittedAt))}</small></span>
+            </span>
+            <span class="screening-summary-result">
+              <span class="screening-summary-score">${safe(dashboardValue(row.osa18Total))}/126</span>
+              <span class="badge ${riskClass(row.riskLevel)}">${safe(riskText(row.riskLevel))}</span>
+            </span>
+          </summary>
+          <div class="screening-record-body">
+            <div class="screening-overview-grid">
+              <div class="screening-overview-item"><span>วันที่คัดกรอง</span><strong>${safe(formatDate(row.submittedAt))}</strong></div>
+              <div class="screening-overview-item"><span>คะแนน OSA-18</span><strong>${safe(dashboardValue(row.osa18Total))} / 126</strong></div>
+              <div class="screening-overview-item"><span>กลุ่มคะแนน</span><strong>${safe(scoreGroupText(row.osa18Group))}</strong></div>
+              <div class="screening-overview-item"><span>ระดับความเสี่ยง</span><strong>${safe(riskText(row.riskLevel))}</strong></div>
+              <div class="screening-overview-item"><span>สถานะติดตาม</span><strong>${safe(clinicalStatusText(row.clinicalStatus))}</strong></div>
+            </div>
+            <div class="screening-guidance"><strong>คำแนะนำ</strong>${safe(row.recommendation || 'ยังไม่มีคำแนะนำเพิ่มเติม')}</div>
+            ${notes}
+            <section class="screening-answer-section">
+              <div class="screening-answer-head"><h4>สัญญาณสำคัญ 6 ข้อ</h4><span>พบ ${safe(corePositive)} จาก ${safe(coreItems.length)} ข้อ</span></div>
+              <div class="answer-grid">${renderBinaryAnswers(coreItems, row.coreAnswers, 'มี / ใช่', 'ไม่มี / ไม่ใช่')}</div>
+            </section>
+            <section class="screening-answer-section">
+              <div class="screening-answer-head"><h4>ปัจจัยเสี่ยง 12 ข้อ</h4><span>พบ ${safe(riskPositive)} จาก ${safe(riskItems.length)} ข้อ</span></div>
+              <div class="answer-grid">${renderBinaryAnswers(riskItems, row.riskFactors, 'พบ', 'ไม่พบ')}</div>
+            </section>
+            <section class="screening-answer-section">
+              <div class="screening-answer-head"><h4>OSA-18 ครบ 18 ข้อ</h4><span>คะแนน 1 = ไม่เลย · 7 = ทุกวัน</span></div>
+              <div class="osa-answer-list">${renderOsaAnswers(osaItems, row.osa18Answers)}</div>
+            </section>
+          </div>
+        </details>
+      `;
+    }
+
+    function renderParentChildDashboard(data) {
+      const children = data.children || [];
+      const screenings = data.screenings || [];
+      if (!children.length) return '<div class="notice">ยังไม่มีข้อมูลเด็ก กรุณาลงทะเบียนข้อมูลเด็กก่อนทำแบบคัดกรอง</div>';
+
+      return `<div class="child-dashboard-list">${children.map(child => {
+        const childScreenings = screenings.filter(row => row.childId === child.childId);
+        const name = child.childName || child.nickname || child.childCode || 'เด็กในบัญชี';
+        const nickname = child.nickname && child.nickname !== name ? `ชื่อเล่น ${child.nickname}` : 'ข้อมูลสุขภาพเด็ก';
+        const history = childScreenings.length
+          ? childScreenings.map((row, index) => renderScreeningRecord(row, index, childScreenings.length)).join('')
+          : '<div class="notice">ยังไม่มีผลคัดกรองสำหรับเด็กคนนี้</div>';
+        return `
+          <article class="child-profile-card">
+            <div class="child-profile-head">
+              <div><div class="child-profile-kicker">${safe(nickname)}</div><h3>${safe(name)}</h3></div>
+              <span class="child-code-pill">รหัสเด็ก: ${safe(dashboardValue(child.childCode || child.childId))}</span>
+            </div>
+            <div class="child-info-grid">
+              ${renderChildInfoItem('เพศ', sexText(child.sex))}
+              ${renderChildInfoItem('วันเกิด', formatDateOnly(child.birthDate))}
+              ${renderChildInfoItem('อายุ', dashboardValue(child.ageYears, ' ปี'))}
+              ${renderChildInfoItem('น้ำหนัก', dashboardValue(child.weightKg, ' กก.'))}
+              ${renderChildInfoItem('ส่วนสูง', dashboardValue(child.heightCm, ' ซม.'))}
+              ${renderChildInfoItem('BMI', child.bmi)}
+              ${renderChildInfoItem('ขนาดทอนซิล', child.tonsilSize || 'ไม่ทราบ / ยังไม่ประเมิน')}
+              ${renderChildInfoItem('ผลเอกซเรย์อะดีนอยด์', adenoidText(child.adenoidXrayResult))}
+              ${renderChildInfoItem('ยืนยันเลขบัตรเด็ก', child.childCidNumber ? 'มีข้อมูลในระบบ' : 'ยังไม่มีข้อมูล')}
+            </div>
+            ${child.notes ? `<div class="child-note"><strong>หมายเหตุสุขภาพ:</strong> ${safe(child.notes)}</div>` : ''}
+            <div class="child-screening-area">
+              <h4 class="child-screening-title">ประวัติผลคัดกรอง ${safe(childScreenings.length)} ครั้ง</h4>
+              <div class="child-screening-list">${history}</div>
+            </div>
+          </article>
+        `;
+      }).join('')}</div>`;
+    }
+
+    function renderStaffChildDashboard(data) {
+      const childById = {};
+      (data.children || []).forEach(child => { childById[child.childId] = child; });
+      const childRows = (data.children || []).map(child => `
+        <tr>
+          <td>${safe(child.childCode || child.childId)}</td>
+          <td>${safe(child.childName || child.nickname || '-')}</td>
+          <td>${safe(sexText(child.sex))}</td>
+          <td>${safe(dashboardValue(child.ageYears, ' ปี'))}</td>
+          <td>${safe(dashboardValue(child.weightKg, ' กก.'))}</td>
+          <td>${safe(dashboardValue(child.heightCm, ' ซม.'))}</td>
+          <td>${safe(dashboardValue(child.bmi))}</td>
+          <td>${safe(child.tonsilSize || '-')}</td>
+          <td>${safe(adenoidText(child.adenoidXrayResult))}</td>
+        </tr>
+      `).join('');
+      const screeningRows = (data.screenings || []).map(row => {
+        const child = childById[row.childId] || {};
+        return `
+          <tr>
+            <td>${safe(child.childName || child.nickname || child.childCode || row.childId)}</td>
+            <td>${safe(formatDate(row.submittedAt))}</td>
+            <td>${safe(dashboardValue(row.osa18Total))} / 126</td>
+            <td>${safe(scoreGroupText(row.osa18Group))}</td>
+            <td><span class="badge ${riskClass(row.riskLevel)}">${safe(riskText(row.riskLevel))}</span></td>
+            <td>${safe(clinicalStatusText(row.clinicalStatus))}</td>
+            <td>${safe(row.recommendation || '-')}</td>
+          </tr>
+        `;
+      }).join('');
+
+      return `
+        <div class="grid">
+          <section><h4 class="child-screening-title">ข้อมูลเด็ก</h4><div class="table-wrap"><table><thead><tr><th>รหัสเด็ก</th><th>ชื่อเด็ก</th><th>เพศ</th><th>อายุ</th><th>น้ำหนัก</th><th>ส่วนสูง</th><th>BMI</th><th>ทอนซิล</th><th>อะดีนอยด์</th></tr></thead><tbody>${childRows || '<tr><td colspan="9">ยังไม่มีข้อมูลเด็ก</td></tr>'}</tbody></table></div></section>
+          <section><h4 class="child-screening-title">ผลคัดกรอง</h4><div class="table-wrap"><table><thead><tr><th>เด็ก</th><th>วันที่คัดกรอง</th><th>OSA-18</th><th>กลุ่มคะแนน</th><th>ความเสี่ยง</th><th>สถานะ</th><th>คำแนะนำ</th></tr></thead><tbody>${screeningRows || '<tr><td colspan="7">ยังไม่มีผลคัดกรอง</td></tr>'}</tbody></table></div></section>
+        </div>
+      `;
+    }
+
+    function renderDashboardKpis(data) {
+      const metrics = data.metrics || {};
+      const screenings = data.screenings || [];
+      const latest = screenings[0] || {};
+      const values = [
+        { icon: 'เด็ก', label: 'เด็กทั้งหมด', value: metrics.children ?? (data.children || []).length, caption: 'ข้อมูลเด็กในระบบ', tone: 'blue' },
+        { icon: 'ผล', label: 'ประเมินทั้งหมด', value: metrics.screenings ?? screenings.length, caption: 'ผลคัดกรองที่บันทึกแล้ว', tone: 'teal' },
+        { icon: 'OSA', label: 'คะแนนล่าสุด', value: latest.osa18Total ?? '-', caption: latest.screeningId ? 'คะแนนเต็ม 126' : 'ยังไม่มีผลคัดกรอง', tone: 'gold' },
+        { icon: '!', label: 'เสี่ยงสูง / เร่งด่วน', value: metrics.highRisk ?? screenings.filter(row => row.riskLevel === 'high' || row.riskLevel === 'urgent-review').length, caption: 'ผลที่ต้องติดตามเป็นพิเศษ', tone: 'red' }
+      ];
+      return values.map(item => `
+        <article class="dashboard-kpi ${item.tone}">
+          <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon" aria-hidden="true">${safe(item.icon)}</span><span>${safe(item.label)}</span></div>
+          <strong>${safe(item.value)}</strong>
+          <small>${safe(item.caption)}</small>
+        </article>
+      `).join('');
+    }
+
+    function renderDashboardInsights(data) {
+      const target = document.getElementById('dashboardInsights');
+      if (!target) return;
+      const screenings = data.screenings || [];
+      const children = data.children || [];
+      if (!screenings.length) {
+        target.className = 'hidden';
+        target.innerHTML = '';
+        return;
+      }
+
+      const childById = {};
+      children.forEach(child => { childById[child.childId] = child; });
+      const riskItems = [
+        { value: 'low', label: 'ความเสี่ยงต่ำ', tone: 'low' },
+        { value: 'moderate', label: 'ความเสี่ยงปานกลาง', tone: 'moderate' },
+        { value: 'high', label: 'ความเสี่ยงสูง', tone: 'high' },
+        { value: 'urgent-review', label: 'ควรทบทวนเร่งด่วน', tone: 'urgent' }
+      ].map(item => ({ ...item, count: screenings.filter(row => row.riskLevel === item.value).length }));
+      const riskRows = riskItems.map(item => {
+        const percent = screenings.length ? Math.round((item.count / screenings.length) * 100) : 0;
+        return `
+          <div class="risk-distribution-row">
+            <span class="risk-distribution-label">${safe(item.label)}</span>
+            <span class="risk-distribution-track" title="${safeAttr(percent)}%"><span class="risk-distribution-fill ${item.tone}" style="--bar-size:${safeAttr(percent)}%"></span></span>
+            <span class="risk-distribution-count">${safe(item.count)}</span>
+          </div>
+        `;
+      }).join('');
+
+      const recent = screenings.slice(0, 8).reverse();
+      const startNo = Math.max(1, screenings.length - recent.length + 1);
+      const historyBars = recent.map((row, index) => {
+        const score = Math.max(0, Math.min(126, Number(row.osa18Total) || 0));
+        const percent = Math.max(3, Math.round((score / 126) * 100));
+        const child = childById[row.childId] || {};
+        const childLabel = child.nickname || child.childCode || `ครั้ง ${startNo + index}`;
+        return `
+          <div class="osa-history-item" title="${safeAttr(childLabel)} · ${safeAttr(formatDate(row.submittedAt))}">
+            <span class="osa-history-value">${safe(score)}</span>
+            <span class="osa-history-track"><span class="osa-history-bar" style="--bar-size:${safeAttr(percent)}%"></span></span>
+            <span class="osa-history-label">${safe(childLabel)}</span>
+          </div>
+        `;
+      }).join('');
+
+      target.className = 'dashboard-insight-grid';
+      target.innerHTML = `
+        <article class="dashboard-insight-card">
+          <div class="dashboard-insight-head"><h3>สรุประดับความเสี่ยง</h3><span>${safe(screenings.length)} ผลคัดกรอง</span></div>
+          <div class="dashboard-insight-body"><div class="risk-distribution">${riskRows}</div></div>
+        </article>
+        <article class="dashboard-insight-card">
+          <div class="dashboard-insight-head"><h3>แนวโน้มคะแนน OSA-18</h3><span>สูงสุด 8 ผลล่าสุด</span></div>
+          <div class="dashboard-insight-body"><div class="osa-history-chart">${historyBars}</div></div>
+        </article>
+      `;
+    }
+
+    function renderDashboard(data) {
+      renderChildOptions();
+      renderLatestScreeningSummary(data, null);
+      renderDashboardInsights(data);
+      const isParentDashboard = !!(state.user && state.user.role === 'parent');
+      const metricsElement = document.getElementById('metrics');
+      const contentTitle = document.getElementById('dashboardContentTitle');
+      const contentDescription = document.getElementById('dashboardContentDescription');
+      metricsElement.classList.remove('hidden');
+      metricsElement.innerHTML = renderDashboardKpis(data);
+
+      if (isParentDashboard) {
+        if (contentTitle) contentTitle.textContent = 'ข้อมูลเด็กและประวัติผลคัดกรอง';
+        if (contentDescription) contentDescription.textContent = 'ผลล่าสุดเปิดไว้ให้ทันที ส่วนผลครั้งก่อนสามารถกดเปิดดูคำตอบครบทุกข้อได้';
+        document.getElementById('parentTable').innerHTML = renderParentChildDashboard(data);
+      } else {
+        if (contentTitle) contentTitle.textContent = 'ข้อมูลเด็กและผลคัดกรอง';
+        if (contentDescription) contentDescription.textContent = 'ตารางสรุปเฉพาะข้อมูลเด็ก คะแนน ความเสี่ยง สถานะ และคำแนะนำ';
+        document.getElementById('parentTable').innerHTML = renderStaffChildDashboard(data);
+      }
+
+      document.getElementById('clinicalDashboard').classList.toggle('hidden', !hasClinicalAccess());
+      document.getElementById('adminPanel').classList.toggle('hidden', !isAdmin());
+    }
+
+    function loadClinical(forceRefresh) {
+      if (!hasClinicalAccess()) return Promise.resolve();
+      const panel = document.getElementById('clinicalDashboard');
+      panel.classList.remove('hidden');
+      return callServer('listClinicalDashboard', [state.token, Boolean(forceRefresh)])
+        .then(data => {
+          state.clinical = data;
+          const m = data.metrics || {};
+          const metricHtml = [
+            ['totalChildren', 'เด็กทั้งหมด'],
+            ['totalScreenings', 'แบบคัดกรองทั้งหมด'],
+            ['highRisk', 'เสี่ยงสูง / เร่งด่วน'],
+            ['pendingReview', 'รอทบทวน'],
+            ['videoUploaded', 'วิดีโอ'],
+            ['humanReviewNeeded', 'ต้อง human review']
+          ].map(item => `
+            <div class="metric"><span>${safe(item[1])}</span><strong>${safe(m[item[0]] || 0)}</strong></div>
+          `).join('');
+
+          const rows = (data.latest || []).map(row => `
+            <tr>
+              <td>${safe(row.childCode || row.nickname)}</td>
+              <td>${safe(formatDate(row.submittedAt))}</td>
+              <td><span class="badge ${riskClass(row.riskLevel)}">${safe(riskText(row.riskLevel))}</span></td>
+              <td>${safe(row.osa18Total)}</td>
+              <td>${safe(row.clinicalStatus)}</td>
+              <td><button type="button" class="btn small secondary" onclick="fillScreeningReview('${jsArg(row.screeningId)}')">เลือก</button></td>
+            </tr>
+          `).join('');
+
+          panel.innerHTML = `
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">Clinical Review</div>
+                <h3>ภาพรวมเคสสำหรับทีมคลินิก</h3>
+                <p>แสดงเคสล่าสุดและสถานะที่ควรทบทวน</p>
+              </div>
+            </div>
+            <div class="metric-grid">${metricHtml}</div>
+            <div class="table-wrap mt">
+              <table>
+                <thead><tr><th>รหัสเด็ก</th><th>วันที่</th><th>ความเสี่ยง</th><th>OSA-18</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+                <tbody>${rows || '<tr><td colspan="6" style="text-align:center;color:var(--mt)">ยังไม่มีข้อมูล</td></tr>'}</tbody>
+              </table>
+            </div>
+          `;
+        })
+        .catch(err => {
+          panel.innerHTML += `<div class="danger-note">${safe(err.message || String(err))}</div>`;
+        });
+    }
+
+    function renderClinicalFromAdmin(data) {
+      const panel = document.getElementById('clinicalDashboard');
+      if (!panel || !data) return;
+      panel.classList.remove('hidden');
+      state.clinical = data;
+      const m = data.metrics || {};
+      const metricHtml = [
+        ['totalChildren', 'เด็กทั้งหมด'],
+        ['totalScreenings', 'แบบคัดกรองทั้งหมด'],
+        ['highRisk', 'เสี่ยงสูง / เร่งด่วน'],
+        ['pendingReview', 'รอทบทวน'],
+        ['videoUploaded', 'วิดีโอ'],
+        ['humanReviewNeeded', 'ต้อง human review']
+      ].map(item => `
+        <div class="metric"><span>${safe(item[1])}</span><strong>${safe(m[item[0]] || 0)}</strong></div>
+      `).join('');
+
+      const rows = (data.latest || []).map(row => `
+        <tr>
+          <td>${safe(row.childCode || row.nickname)}</td>
+          <td>${safe(formatDate(row.submittedAt))}</td>
+          <td><span class="badge ${riskClass(row.riskLevel)}">${safe(riskText(row.riskLevel))}</span></td>
+          <td>${safe(row.osa18Total)}</td>
+          <td>${safe(row.clinicalStatus)}</td>
+          <td><button type="button" class="btn small secondary" onclick="fillScreeningReview('${jsArg(row.screeningId)}')">เลือก</button></td>
+        </tr>
+      `).join('');
+
+      panel.innerHTML = `
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Clinical Review</div>
+            <h3>ภาพรวมเคสสำหรับทีมคลินิก</h3>
+            <p>แสดงเคสล่าสุดและสถานะที่ควรทบทวน</p>
+          </div>
+        </div>
+        <div class="metric-grid">${metricHtml}</div>
+        <div class="table-wrap mt">
+          <table>
+            <thead><tr><th>รหัสเด็ก</th><th>วันที่</th><th>ความเสี่ยง</th><th>OSA-18</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+            <tbody>${rows || '<tr><td colspan="6" style="text-align:center;color:var(--mt)">ยังไม่มีข้อมูล</td></tr>'}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function loadAdmin(forceRefresh) {
+      if (!isAdmin()) return Promise.resolve();
+      return callServer('listAdminDashboard', [state.token, Boolean(forceRefresh)])
+        .then(data => {
+          state.admin = data;
+          const m = data.metrics || {};
+          const metricHtml = [
+            ['totalUsers', 'ผู้ใช้ทั้งหมด'],
+            ['activeParents', 'ผู้ปกครอง active'],
+            ['admins', 'Admin'],
+            ['totalChildren', 'เด็กทั้งหมด'],
+            ['totalScreenings', 'แบบคัดกรอง'],
+            ['totalVideos', 'วิดีโอ'],
+            ['highRisk', 'เสี่ยงสูง / เร่งด่วน'],
+            ['pendingClinicalReview', 'รอทบทวน']
+          ].map(item => `
+            <div class="metric"><span>${safe(item[1])}</span><strong>${safe(m[item[0]] || 0)}</strong></div>
+          `).join('');
+
+          const userRows = (data.users || []).map(user => `
+            <tr>
+              <td>${safe(user.email || user.userId)}</td>
+              <td>${safe(user.displayName)}</td>
+              <td>${safe(user.role)}</td>
+              <td>${safe(user.status)}</td>
+              <td><button type="button" class="btn small secondary" onclick="fillUserAdmin('${jsArg(user.userId)}','${jsArg(user.displayName || '')}','${jsArg(user.role || 'parent')}','${jsArg(user.status || 'active')}')">เลือก</button></td>
+            </tr>
+          `).join('');
+
+          const screeningRows = (data.screenings || []).slice(0, 30).map(row => `
+            <tr>
+              <td>${safe(formatDate(row.submittedAt))}</td>
+              <td><span class="badge ${riskClass(row.riskLevel)}">${safe(riskText(row.riskLevel))}</span></td>
+              <td>${safe(row.osa18Total)}</td>
+              <td>${safe(row.clinicalStatus)}</td>
+              <td><button type="button" class="btn small secondary" onclick="fillScreeningReview('${jsArg(row.screeningId)}')">เลือก</button></td>
+            </tr>
+          `).join('');
+
+          const videoRows = (data.videos || []).slice(0, 30).map(video => `
+            <tr>
+              <td>${safe(formatDate(video.uploadedAt))}</td>
+              <td><button type="button" class="btn small" onclick="openVideo('${safeAttr(encodeURIComponent(video.videoId))}')">${safe(video.fileName)}</button></td>
+              <td>${safe(video.uploadStatus)}</td>
+              <td>${safe(video.reviewStatus)}</td>
+              <td><button type="button" class="btn small secondary" onclick="fillVideoAdmin('${jsArg(video.videoId)}','${jsArg(video.reviewStatus || 'pending-human-review')}')">เลือก</button></td>
+            </tr>
+          `).join('');
+
+          document.getElementById('adminDashboard').innerHTML = `
+            <div class="metric-grid">${metricHtml}</div>
+            <h3 class="mt">ผู้ใช้</h3>
+            <div class="table-wrap mt">
+              <table>
+                <thead><tr><th>Email / User</th><th>ชื่อ</th><th>Role</th><th>Status</th><th>จัดการ</th></tr></thead>
+                <tbody>${userRows || '<tr><td colspan="5" style="text-align:center;color:var(--mt)">ยังไม่มีผู้ใช้</td></tr>'}</tbody>
+              </table>
+            </div>
+            <h3 class="mt">เคสล่าสุด</h3>
+            <div class="table-wrap mt">
+              <table>
+                <thead><tr><th>วันที่</th><th>ความเสี่ยง</th><th>OSA-18</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+                <tbody>${screeningRows || '<tr><td colspan="5" style="text-align:center;color:var(--mt)">ยังไม่มีเคส</td></tr>'}</tbody>
+              </table>
+            </div>
+            <h3 class="mt">วิดีโอล่าสุด</h3>
+            <div class="table-wrap mt">
+              <table>
+                <thead><tr><th>วันที่</th><th>ไฟล์</th><th>อัปโหลด</th><th>Review</th><th>จัดการ</th></tr></thead>
+                <tbody>${videoRows || '<tr><td colspan="5" style="text-align:center;color:var(--mt)">ยังไม่มีวิดีโอ</td></tr>'}</tbody>
+              </table>
+            </div>
+          `;
+        })
+        .catch(err => toast(err.message || String(err)));
+    }
+
+    function fillScreeningReview(screeningId) {
+      const id = decodeURIComponent(screeningId || '');
+      document.getElementById('adminScreeningId').value = id;
+      const row = ((state.admin && state.admin.screenings) || []).find(item => item.screeningId === id);
+      if (row) document.getElementById('adminClinicalStatus').value = row.clinicalStatus || 'new';
+      toast('เลือกเคส ' + id);
+    }
+
+    function fillUserAdmin(userId, displayName, role, status) {
+      document.getElementById('adminUserId').value = decodeURIComponent(userId || '');
+      document.getElementById('adminDisplayName').value = decodeURIComponent(displayName || '');
+      document.getElementById('adminUserRole').value = decodeURIComponent(role || 'parent');
+      document.getElementById('adminUserStatus').value = decodeURIComponent(status || 'active');
+    }
+
+    function fillVideoAdmin(videoId, reviewStatus) {
+      document.getElementById('adminVideoId').value = decodeURIComponent(videoId || '');
+      document.getElementById('adminVideoReviewStatus').value = decodeURIComponent(reviewStatus || 'pending-human-review');
+    }
+
+    function saveAdminScreeningReview() {
+      if (!isAdmin()) return toast('ต้องเข้าสู่ระบบ admin');
+      const payload = {
+        screeningId: val('adminScreeningId'),
+        clinicalStatus: val('adminClinicalStatus'),
+        reviewerNotes: val('adminReviewerNotes')
+      };
+      if (!payload.screeningId) return toast('กรุณาระบุ Screening ID');
+      callServer('saveClinicalReview', [state.token, payload])
+        .then(() => {
+          toast('บันทึกสถานะเคสแล้ว');
+          return loadDashboard(true);
+        })
+        .catch(err => toast(err.message || String(err)));
+    }
+
+    function saveAdminUser() {
+      if (!isAdmin()) return toast('ต้องเข้าสู่ระบบ admin');
+      const payload = {
+        userId: val('adminUserId'),
+        displayName: val('adminDisplayName'),
+        role: val('adminUserRole'),
+        status: val('adminUserStatus')
+      };
+      if (!payload.userId) return toast('กรุณาระบุ User ID');
+      callServer('updateUserByAdmin', [state.token, payload])
+        .then(() => {
+          toast('บันทึกผู้ใช้แล้ว');
+          return loadDashboard(true);
+        })
+        .catch(err => toast(err.message || String(err)));
+    }
+
+    function saveAdminVideo() {
+      if (!isAdmin()) return toast('ต้องเข้าสู่ระบบ admin');
+      const payload = {
+        videoId: val('adminVideoId'),
+        reviewStatus: val('adminVideoReviewStatus'),
+        reviewerNotes: val('adminVideoNotes')
+      };
+      if (!payload.videoId) return toast('กรุณาระบุ Video ID');
+      callServer('updateVideoReviewByAdmin', [state.token, payload])
+        .then(() => {
+          toast('บันทึกสถานะวิดีโอแล้ว');
+          return loadDashboard(true);
+        })
+        .catch(err => toast(err.message || String(err)));
+    }
+
+    function hasClinicalAccess() {
+      return !!(state.user && ['nurse', 'ent', 'doctor', 'admin'].includes(state.user.role));
+    }
+
+    function isAdmin() {
+      return !!(state.user && state.user.role === 'admin');
+    }
+
+    function riskClass(value) {
+      if (value === 'urgent-review') return 'urgent';
+      if (value === 'high') return 'high';
+      if (value === 'moderate') return 'moderate';
+      if (value === 'low') return 'low';
+      return 'neutral';
+    }
+
+    function riskText(value) {
+      return riskLabels[value] || value || '-';
+    }
+
+    function scoreGroupText(value) {
+      return ({ low: 'ต่ำ', moderate: 'ปานกลาง', high: 'สูง' })[value] || value || '-';
+    }
+
+    function clinicalStatusText(value) {
+      return ({
+        new: 'รอเจ้าหน้าที่ทบทวน',
+        reviewing: 'กำลังทบทวน',
+        'follow-up': 'นัดติดตาม',
+        referred: 'ส่งต่อแล้ว',
+        closed: 'สิ้นสุดการติดตาม'
+      })[value] || value || '-';
+    }
+
+    function formatDate(value) {
+      if (!value) return '-';
+      const date = new Date(value);
+      if (isNaN(date.getTime())) return value;
+      return date.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+    }
+
+    function val(id) {
+      const el = document.getElementById(id);
+      return el ? String(el.value || '').trim() : '';
+    }
+
+    function safe(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[char]);
+    }
+
+    function safeAttr(value) { return safe(value); }
+
+    function jsArg(value) { return encodeURIComponent(String(value ?? '')); }
+
+    function toast(message) {
+      const box = document.getElementById('toast');
+      box.textContent = message;
+      box.style.display = 'block';
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => { box.style.display = 'none'; }, 3600);
+    }
+
+    function setButtonBusy(button, busy, busyLabel) {
+      if (!button) return;
+      if (busy) {
+        if (!button.dataset.idleLabel) button.dataset.idleLabel = button.textContent;
+        button.disabled = true;
+        button.classList.add('is-busy');
+        button.textContent = busyLabel || 'กำลังดำเนินการ...';
+      } else {
+        button.disabled = false;
+        button.classList.remove('is-busy');
+        if (button.dataset.idleLabel) button.textContent = button.dataset.idleLabel;
+      }
+    }
+
+    function initUxEnhancements() {
+      if (initUxEnhancements.ready) return;
+      initUxEnhancements.ready = true;
+
+      const cidInput = document.getElementById('childCidNumber');
+      if (cidInput) {
+        cidInput.addEventListener('input', function () {
+          const digits = this.value.replace(/\D/g, '').slice(0, 13);
+          const groups = [1, 4, 5, 2, 1];
+          const parts = [];
+          let cursor = 0;
+          groups.forEach(size => {
+            const part = digits.slice(cursor, cursor + size);
+            if (part) parts.push(part);
+            cursor += size;
+          });
+          this.value = parts.join('-');
+          this.closest('.field')?.classList.toggle('field-error', digits.length > 0 && digits.length < 13);
+        });
+      }
+
+      const birthDate = document.getElementById('birthDate');
+      if (birthDate) birthDate.addEventListener('change', () => updateAgeFromBirthDate(birthDate.value));
+
+      const videoInput = document.getElementById('videoFile');
+      if (videoInput) {
+        videoInput.addEventListener('change', function () {
+          const meta = document.getElementById('videoFileMeta');
+          const file = this.files && this.files[0];
+          if (!meta) return;
+          if (!file) {
+            meta.textContent = 'ยังไม่ได้เลือกไฟล์';
+            return;
+          }
+          const sizeMb = file.size / (1024 * 1024);
+          meta.textContent = `${file.name} · ${sizeMb.toFixed(sizeMb < 10 ? 1 : 0)} MB` +
+            (sizeMb > 20 ? ' · ไฟล์ค่อนข้างใหญ่ อาจใช้เวลาอัปโหลดนาน' : ' · พร้อมอัปโหลด');
+        });
+      }
+
+      ['adminUsername', 'adminPassword'].forEach(id => {
+        document.getElementById(id)?.addEventListener('keydown', event => {
+          if (event.key === 'Enter') adminLogin();
+        });
+      });
+      ['childCid'].forEach(id => {
+        document.getElementById(id)?.addEventListener('keydown', event => {
+          if (event.key === 'Enter') loginWithCid();
+        });
+      });
+      document.querySelectorAll('[role="button"][tabindex="0"]').forEach(element => {
+        element.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            element.click();
+          }
+        });
+      });
+    }
+
+    function updateAgeFromBirthDate(value) {
+      if (!value) return;
+      const birth = new Date(value + 'T00:00:00');
+      if (isNaN(birth.getTime()) || birth > new Date()) return;
+      const today = new Date();
+      let months = (today.getFullYear() - birth.getFullYear()) * 12 + today.getMonth() - birth.getMonth();
+      if (today.getDate() < birth.getDate()) months -= 1;
+      const years = Math.max(0, months / 12);
+      const ageInput = document.getElementById('ageYears');
+      if (ageInput) ageInput.value = years.toFixed(1).replace(/\.0$/, '');
+    }
+
+    function fallbackSchema() {
+      return {
+        coreQuestions: [
+          { key: 'shakeToBreathe',           label: 'ผู้ปกครองต้องเขย่าตัวเด็กขณะหลับเพื่อกระตุ้นให้หายใจ' },
+          { key: 'witnessedApnea',            label: 'เด็กมีการหยุดหายใจขณะหลับ' },
+          { key: 'breathingDifficulty',       label: 'เด็กมีอาการหายใจลำบากขณะหลับ' },
+          { key: 'caregiverConcernBreathing', label: 'ผู้ปกครองกังวลกับการหายใจของลูกขณะหลับ' },
+          { key: 'loudSnoring',               label: 'ระดับความดังของเสียงกรน' },
+          { key: 'frequentSnoring',           label: 'ความถี่หรือความบ่อยของการกรน' }
+        ],
+        riskFactors: [
+          { key: 'ageUnder3',        label: 'อายุน้อยกว่า 3 ปี' },
+          { key: 'obesity',          label: 'อ้วน หรือ weight for height มากกว่าร้อยละ 140' },
+          { key: 'tonsilAdenoid',    label: 'ต่อมทอนซิลโต / สงสัยอะดีนอยด์โต' },
+          { key: 'downSyndrome',     label: 'Down syndrome' },
+          { key: 'craniofacial',     label: 'โครงสร้างใบหน้าหรือกะโหลกผิดปกติ' },
+          { key: 'neuromuscular',    label: 'โรคระบบประสาทและกล้ามเนื้อ / สมองพิการ' },
+          { key: 'chronicLung',      label: 'โรคปอดเรื้อรัง' },
+          { key: 'sickleCell',       label: 'sickle cell disease' },
+          { key: 'geneticMetabolic', label: 'genetic / metabolic / storage disease' },
+          { key: 'failureToThrive',  label: 'เลี้ยงไม่โต / น้ำหนักขึ้นไม่ดี' },
+          { key: 'enuresis',         label: 'ปัสสาวะรดที่นอน' },
+          { key: 'learningBehavior', label: 'ปัญหาพฤติกรรมหรือการเรียน' }
+        ],
+        osa18Items: [
+          { key: 'sd_loud_snoring',   domain: 'Sleep disturbance',  label: 'นอนกรนเสียงดัง' },
+          { key: 'sd_breath_holding', domain: 'Sleep disturbance',  label: 'มีหยุดหายใจเป็นช่วง ๆ' },
+          { key: 'sd_choking_gasping',domain: 'Sleep disturbance',  label: 'สำลักหรือสะดุ้ง / หายใจเฮือกขณะหลับ' },
+          { key: 'sd_restless_sleep', domain: 'Sleep disturbance',  label: 'นอนกระสับกระส่ายหรือตื่นบ่อย' },
+          { key: 'ps_mouth_breathing',domain: 'Physical suffering', label: 'หายใจทางปากเพราะหายใจทางจมูกไม่สะดวก' },
+          { key: 'ps_frequent_colds', domain: 'Physical suffering', label: 'เป็นหวัดหรือติดเชื้อทางเดินหายใจส่วนต้นบ่อย' },
+          { key: 'ps_nasal_discharge',domain: 'Physical suffering', label: 'น้ำมูกไหล' },
+          { key: 'ps_swallowing',     domain: 'Physical suffering', label: 'กลืนอาหารลำบาก' },
+          { key: 'ed_mood',           domain: 'Emotional distress', label: 'อารมณ์แปรปรวนหรือร้องไห้ง่าย' },
+          { key: 'ed_aggressive',     domain: 'Emotional distress', label: 'ก้าวร้าวหรือซุกซนมากผิดปกติ' },
+          { key: 'ed_discipline',     domain: 'Emotional distress', label: 'ควบคุมยาก / ดื้อผิดปกติ' },
+          { key: 'dt_sleepy',         domain: 'Daytime problems',   label: 'เผลอหลับเวลากลางวัน' },
+          { key: 'dt_attention',      domain: 'Daytime problems',   label: 'ขาดสมาธิหรือสมาธิสั้น' },
+          { key: 'dt_wake_up',        domain: 'Daytime problems',   label: 'ปลุกตื่นยากในตอนเช้า' },
+          { key: 'cc_general_health', domain: 'Caregiver concern',  label: 'กังวลสุขภาพทั่วไปของลูก' },
+          { key: 'cc_not_enough_air', domain: 'Caregiver concern',  label: 'กังวลว่าลูกจะหายใจได้ไม่เพียงพอ / ขาดอากาศหายใจ' },
+          { key: 'cc_daily_life',     domain: 'Caregiver concern',  label: 'ความกังวลรบกวนจนทำกิจวัตรประจำวันไม่ได้' },
+          { key: 'cc_frustrated',     domain: 'Caregiver concern',  label: 'รู้สึกหงุดหงิดกับปัญหาที่เกิดขึ้น' }
+        ],
+        scoreLabels: [
+          { value: 1, label: '1 = ไม่เกิดขึ้นเลย' },
+          { value: 2, label: '2 = แทบไม่เกิดขึ้น' },
+          { value: 3, label: '3 = เกิดขึ้นน้อยมาก' },
+          { value: 4, label: '4 = เกิดขึ้นบ้างบางครั้ง' },
+          { value: 5, label: '5 = เกิดขึ้นบ่อยพอควร' },
+          { value: 6, label: '6 = เกิดขึ้นบ่อยมาก' },
+          { value: 7, label: '7 = ตลอดเวลา' }
+        ]
+      };
+    }
+    /* ─── Login Modal ─── */
+    function openLoginModal(tab) {
+      var el = document.getElementById('login');
+      el.dataset.tab = tab || 'parent';
+      el.classList.add('active');
+      document.body.classList.add('login-modal-open');
+      document.addEventListener('keydown', _loginEscHandler);
+      window.setTimeout(function () {
+        var target = document.getElementById(tab === 'admin' ? 'adminUsername' : 'childCid');
+        if (target) target.focus();
+      }, 80);
+    }
+
+    function closeLoginModal() {
+      document.body.classList.remove('login-modal-open');
+      document.getElementById('login').classList.remove('active');
+      document.removeEventListener('keydown', _loginEscHandler);
+    }
+
+    function _loginEscHandler(e) {
+      if (e.key === 'Escape') closeLoginModal();
+    }
+
+    document.getElementById('login').addEventListener('click', function(e) {
+      if (e.target === this) closeLoginModal();
+    });
+
+    /* Keep login as a normal page; CTA buttons can still open the modal. */
+    (function() {
+      var _st = showTab;
+      showTab = function(tab, options) {
+        closeLoginModal();
+        _st(tab, options);
+      };
+    })();
+
+    /* ─── Thai Buddhist-Era Date Picker ─── */
+    function buildThaiDatePicker(hiddenId, containerId) {
+      var container = document.getElementById(containerId);
+      if (!container) return;
+
+      var months = [
+        'มกราคม','กุมภาพันธ์','มีนาคม','เมษายน',
+        'พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม',
+        'กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'
+      ];
+
+      var currentBE = new Date().getFullYear() + 543;
+
+      var dayHtml = '<option value="">วัน</option>';
+      for (var d = 1; d <= 31; d++)
+        dayHtml += '<option value="' + d + '">' + d + '</option>';
+
+      var monthHtml = '<option value="">เดือน</option>';
+      months.forEach(function(m, i) {
+        monthHtml += '<option value="' + (i + 1) + '">' + m + '</option>';
+      });
+
+      var yearHtml = '<option value="">พ.ศ.</option>';
+      for (var y = currentBE; y >= currentBE - 25; y--)
+        yearHtml += '<option value="' + y + '">' + y + '</option>';
+
+      container.innerHTML =
+        '<div class="thai-dp">' +
+          '<select class="thai-dp-sel" aria-label="วัน">' + dayHtml + '</select>' +
+          '<select class="thai-dp-sel" aria-label="เดือน">' + monthHtml + '</select>' +
+          '<select class="thai-dp-sel" aria-label="พ.ศ.">' + yearHtml + '</select>' +
+        '</div>';
+
+      function sync() {
+        var sels = container.querySelectorAll('.thai-dp-sel');
+        var dv = sels[0].value, mv = sels[1].value, yv = sels[2].value;
+        var hidden = document.getElementById(hiddenId);
+        if (dv && mv && yv) {
+          var ce = parseInt(yv) - 543;
+          var mm = mv.length < 2 ? '0' + mv : mv;
+          var dd = dv.length < 2 ? '0' + dv : dv;
+          hidden.value = ce + '-' + mm + '-' + dd;
+        } else {
+          hidden.value = '';
+        }
+        hidden.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      container.querySelectorAll('.thai-dp-sel').forEach(function(s) {
+        s.addEventListener('change', sync);
+      });
+    }
+
+    /* Initialize pickers after DOM is ready */
+    buildThaiDatePicker('childBirthDate', 'childBirthDatePicker');
+    buildThaiDatePicker('birthDate',      'birthDatePicker');
+  </script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- ════ SCREENING WIZARD ════
+       Additive layer over the app script above: renderOsa18() still renders all
+       18 cards into #osa18, then the cards are moved into the step panes by
+       OSA-18 domain. Nothing above needs to know the wizard exists.
+  ════════════════════════════════════════════════════════════════ -->
+    <script>
+    (function () {
+      const STEP_OF_DOMAIN = {
+        'Sleep disturbance':  3,
+        'Physical suffering': 3,
+        'Emotional distress': 4,
+        'Daytime problems':   4,
+        'Caregiver concern':  5
+      };
+      const TOTAL_STEPS = 5;
+      let currentStep = 1;
+      const visited = new Set([1]);
+
+      function panes()  { return document.querySelectorAll('#screening .wiz-pane'); }
+      function pane(n)  { return document.querySelector(`#screening .wiz-pane[data-pane="${n}"]`); }
+      function steps()  { return document.querySelectorAll('#screeningSteps .step-item'); }
+      function links()  { return document.querySelectorAll('#screeningSteps .step-connector'); }
+
+      /* Move the freshly rendered OSA-18 cards into their step pane. */
+      function distributeOsaCards() {
+        const source = document.getElementById('osa18');
+        if (!source) return;
+        source.querySelectorAll('.q-card').forEach(card => {
+          const badge = card.querySelector('.q-domain');
+          const domain = badge ? badge.textContent.trim() : '';
+          const slot = document.querySelector(`[data-osa-slot="${STEP_OF_DOMAIN[domain] || 5}"]`);
+          if (badge && typeof osaDomainText === 'function') badge.textContent = osaDomainText(domain);
+          if (slot) slot.appendChild(card);
+        });
+      }
+
+      /* Unanswered question cards inside one pane. */
+      function unansweredIn(paneEl) {
+        if (!paneEl) return [];
+        return Array.from(paneEl.querySelectorAll('.q-card')).filter(card => {
+          const options = card.querySelectorAll('.q-opt, .score-btn');
+          return options.length && !card.querySelector('.q-opt.selected, .score-btn.selected');
+        });
+      }
+
+      function paneOfStep(n) { return pane(n); }
+
+      function validateStep(n) {
+        if (n === 2) return true;   // risk factors are optional by design
+        if (n === 1 && !document.getElementById('screenChild').value) {
+          toast('กรุณาเลือกเด็กก่อนทำแบบคัดกรอง');
+          return false;
+        }
+        const missing = unansweredIn(paneOfStep(n));
+        if (!missing.length) return true;
+        missing.forEach(card => card.classList.add('question-error'));
+        missing[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        toast('ยังตอบไม่ครบในขั้นตอนนี้ ระบบทำกรอบสีแดงไว้ให้แล้ว');
+        return false;
+      }
+
+      function refreshStepStates() {
+        steps().forEach(item => {
+          const n = Number(item.dataset.step);
+          const done = n === 2 ? true : unansweredIn(paneOfStep(n)).length === 0;
+          const hasQuestions = n === 2 || paneOfStep(n).querySelectorAll('.q-card').length > 0;
+          /* Only a step the user has actually opened may turn green, otherwise
+             the optional risk-factor step reads as "done" before it is seen. */
+          item.classList.toggle('completed', visited.has(n) && done && hasQuestions && n !== currentStep);
+          item.classList.toggle('active', n === currentStep);
+        });
+        links().forEach((link, index) => {
+          link.classList.toggle('done', index + 1 < currentStep);
+        });
+      }
+
+      function gotoStep(n) {
+        currentStep = Math.min(Math.max(n, 1), TOTAL_STEPS);
+        visited.add(currentStep);
+        panes().forEach(p => p.classList.toggle('active', Number(p.dataset.pane) === currentStep));
+        document.getElementById('wizPrev').classList.toggle('hidden', currentStep === 1);
+        document.getElementById('wizNext').classList.toggle('hidden', currentStep === TOTAL_STEPS);
+        document.getElementById('wizSubmit').classList.toggle('hidden', currentStep !== TOTAL_STEPS);
+        refreshStepStates();
+        const anchor = document.getElementById('screeningSteps');
+        if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      document.getElementById('wizNext').addEventListener('click', () => {
+        if (validateStep(currentStep)) gotoStep(currentStep + 1);
+      });
+      document.getElementById('wizPrev').addEventListener('click', () => gotoStep(currentStep - 1));
+      steps().forEach(item => {
+        item.addEventListener('click', () => gotoStep(Number(item.dataset.step)));
+      });
+
+      /* Re-run distribution whenever the schema is rendered. */
+      const baseRenderOsa18 = renderOsa18;
+      renderOsa18 = function () {
+        baseRenderOsa18();
+        distributeOsaCards();
+        gotoStep(1);
+      };
+
+      /* Keep the step circles in sync with every answer. */
+      const baseUpdateProgress = updateScreeningProgress;
+      updateScreeningProgress = function () {
+        baseUpdateProgress();
+        refreshStepStates();
+      };
+
+      /* submitScreening() highlights missing answers — jump to the step holding
+         the first one, otherwise the red outline sits on a hidden pane. */
+      const baseMarkUnanswered = markUnansweredQuestions;
+      markUnansweredQuestions = function (selector, keyName) {
+        baseMarkUnanswered(selector, keyName);
+        const firstError = document.querySelector('#screening .q-card.question-error');
+        const owner = firstError && firstError.closest('.wiz-pane');
+        if (owner) {
+          gotoStep(Number(owner.dataset.pane));
+          firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      };
+
+      document.getElementById('screenChild').addEventListener('change', refreshStepStates);
+      gotoStep(1);
+    })();
+  </script>
+
+</body>
+</html>
