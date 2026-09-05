@@ -519,6 +519,47 @@
   .metric span { font-size: .8rem; color: var(--mt); }
   .metric strong { font-size: 1.4rem; font-weight: 700; color: var(--primary-dark); }
 
+  /* Dashboard workspace */
+  .dash-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 6px; margin: 24px 0; border: 1px solid var(--line); border-radius: 16px; background: #eaf2f1; }
+  .dash-tabs button { flex: 1 0 auto; display: flex; align-items: center; justify-content: center; gap: 9px; border: 0; border-radius: 11px; padding: 13px 18px; background: transparent; color: #496562; font: inherit; font-size: .92rem; font-weight: 600; cursor: pointer; }
+  .dash-tabs button[aria-selected="true"] { color: #006b64; background: white; box-shadow: 0 2px 8px #163c3312; }
+  .dash-tabs button:hover { background: #ffffffa8; }
+  .dash-tabs button span { padding: 1px 8px; border-radius: 6px; background: #dae8e5; font-size: .75rem; }
+  .dash-tabs button[hidden], .dash-pane[hidden] { display: none !important; }
+  .dash-tabs button:focus-visible, .dash-close:focus-visible { outline: 3px solid #008b80; outline-offset: -3px; }
+  .dash-pane { min-width: 0; }
+  .dash-pane:focus { outline: none; }
+  .dash-actions, .dash-row-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .dash-updated { display: block; color: var(--mt); margin-top: 10px; font-size: .8rem; }
+  .dash-toolbar { display: flex; flex-wrap: wrap; gap: 14px; margin: 22px 0; padding: 16px; background: #f4f8f7; border: 1px solid #e7efed; border-radius: 12px; }
+  .dash-toolbar .field { flex: 1 1 160px; min-width: 0; }
+  .dash-toolbar .field:first-child { flex: 2 1 260px; }
+  .dash-toolbar input, .dash-toolbar select { background: white; }
+  .dash-cell-note { display: block; color: var(--mt); font-size: .76rem; margin-top: 4px; }
+  .dash-pane th { white-space: nowrap; }
+  .dash-pane td { min-width: 90px; }
+  .dash-pane td:first-child { min-width: 160px; }
+  .dash-pane .table-wrap { max-width: 100%; }
+  .dash-empty { padding: 38px 20px; text-align: center; color: #4c6763; }
+  .dash-empty-symbol { display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: #e9f4f0; color: #188176; font-size: 2rem; margin-bottom: 14px; }
+  .dash-empty h4 { color: var(--ink); font-size: 1.1rem; margin: 0 0 8px; }
+  .dash-empty p { max-width: 440px; margin: 0 auto 18px; font-size: .9rem; line-height: 1.8; }
+  .dash-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; color: var(--mt); font-size: .8rem; }
+  .dash-pagination button:disabled { opacity: .4; cursor: default; }
+  .dash-overview-callout { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .dash-overview-callout p { color: var(--mt); margin-bottom: 0; }
+  .dash-dialog { width: min(560px, calc(100% - 28px)); max-height: calc(100dvh - 40px); box-sizing: border-box; border: 1px solid var(--line); border-radius: 22px; padding: 30px; color: var(--ink); box-shadow: 0 24px 100px #082f3760; }
+  .dash-dialog.wide { width: min(940px, calc(100% - 28px)); }
+  .dash-dialog::backdrop { background: #123b3a99; backdrop-filter: blur(4px); }
+  .dash-dialog h3 { padding-right: 34px; font-size: 1.15rem; }
+  .dash-close { position: absolute; top: 14px; right: 14px; border: 0; border-radius: 50%; background: #eef4f3; color: #456764; width: 34px; height: 34px; font-size: 1.6rem; cursor: pointer; }
+  .dash-filename { max-width: 220px; overflow-wrap: anywhere; white-space: normal; }
+  .dash-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .dash-scroll-hint { display: none; }
+  @media(max-width: 640px) { .dash-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); } .dash-tabs button { min-width: 0; gap: 5px; font-size: .78rem; padding: 11px 5px !important; } .dash-tabs button span { padding: 1px 5px; } .dash-scroll-hint { display: block; color: var(--mt); font-size: .75rem; margin: 0 0 10px; } }
+  @media(max-width: 640px) { .dashboard-hero { align-items: flex-start; } .dashboard-hero h2 { font-size: 1.3rem; } .dash-tabs { margin: 18px 0; } .dash-tabs button { padding: 11px 14px; } .dash-dialog { padding: 24px 18px; } .dash-toolbar { padding: 12px; } #metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } #metrics .dashboard-kpi { padding: 16px 12px; } .dash-pagination { justify-content: center; } }
+
+
   /* ── Dashboard KPIs ─────────────────────────────────────── */
   .dashboard-kpi {
     background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
@@ -1236,64 +1277,47 @@
     <!-- ════ DASHBOARD ════ -->
     <section id="dashboard" class="section">
       <div class="section-head dashboard-hero">
-        <div>
-          <span class="eyebrow">โรงพยาบาลธัญบุรี · Pediatric OSA Screening</span>
-          <h2>Dashboard ผลคัดกรองเด็กนอนกรน</h2>
-          <p>ดูข้อมูลเด็ก คะแนน OSA-18 ระดับความเสี่ยง และคำตอบแบบคัดกรองครบทุกข้อในที่เดียว</p>
-        </div>
-        <button type="button" class="btn secondary" onclick="loadDashboard(true)"><i class="fa-solid fa-rotate me-1"></i> รีเฟรช Dashboard</button>
+        <div><span class="eyebrow">โรงพยาบาลธัญบุรี · Pediatric OSA Screening</span><h2>ผลคัดกรองเด็กนอนกรน</h2><p>ติดตามผลประเมินและจัดการการดูแลเด็กในที่เดียว</p><small id="dashboardUpdated" class="dash-updated" aria-live="polite">กำลังโหลดข้อมูล…</small></div>
+        <div class="dash-actions"><button type="button" class="btn primary" onclick="showTab('child')"><i class="fa-solid fa-plus" aria-hidden="true"></i> ลงทะเบียนเด็ก</button><button id="dashboardRefresh" type="button" class="btn secondary" onclick="loadDashboard(true)"><i class="fa-solid fa-rotate" aria-hidden="true"></i> รีเฟรช</button></div>
       </div>
-
-      <div id="metrics" class="metric-grid"></div>
-      <section id="dashboardInsights" class="hidden" aria-label="กราฟสรุปผลคัดกรอง"></section>
-      <div id="latestScreeningSummary" class="hidden" aria-live="polite"></div>
-
-      <article id="childScreeningPanel" class="panel mt">
-        <div class="section-head">
-          <div>
-            <h3 id="dashboardContentTitle">ข้อมูลเด็กและประวัติผลคัดกรอง</h3>
-            <p id="dashboardContentDescription">เลือกเปิดผลแต่ละครั้งเพื่อดูสัญญาณสำคัญ ปัจจัยเสี่ยง และ OSA-18 รายข้อ</p>
-          </div>
-        </div>
-        <div id="parentTable"></div>
-      </article>
-
-      <article id="clinicalDashboard" class="panel mt hidden">
-        <div class="section-head">
-          <div>
-            <span class="eyebrow">Clinical Review</span>
-            <h3>ภาพรวมเคสสำหรับทีมคลินิก</h3>
-            <p>แสดงเคสล่าสุดและสถานะที่ควรทบทวน</p>
-          </div>
-        </div>
-      </article>
-
-      <article id="adminPanel" class="panel mt hidden">
-        <div class="section-head">
-          <div>
-            <span class="eyebrow">Admin Management</span>
-            <h3>จัดการระบบทั้งหมด</h3>
-            <p>admin สามารถจัดการผู้ใช้ เคสคัดกรอง และสถานะวิดีโอได้จากหน้านี้</p>
-          </div>
-        </div>
-
-        <div class="admin-layout">
-          <div class="stack">
-
-            <section class="panel soft">
+      <div id="dashboardTabs" class="dash-tabs" role="tablist" aria-label="หมวดข้อมูลคัดกรอง" onkeydown="dashboardTabKey(event)">
+        <button id="dash-tab-overview" type="button" role="tab" aria-selected="true" aria-controls="dash-overview" data-dash-tab="overview" onclick="selectDashboardTab('overview')">ภาพรวม</button>
+        <button id="dash-tab-children" type="button" role="tab" aria-selected="false" aria-controls="dash-children" tabindex="-1" data-dash-tab="children" onclick="selectDashboardTab('children')">ข้อมูลเด็ก <span data-dash-count="children">0</span></button>
+        <button id="dash-tab-screenings" type="button" role="tab" aria-selected="false" aria-controls="dash-screenings" tabindex="-1" data-dash-tab="screenings" onclick="selectDashboardTab('screenings')">ผลคัดกรอง <span data-dash-count="screenings">0</span></button>
+        <button id="dash-tab-videos" type="button" role="tab" aria-selected="false" aria-controls="dash-videos" tabindex="-1" data-dash-tab="videos" hidden onclick="selectDashboardTab('videos')">วิดีโอ <span data-dash-count="videos">0</span></button>
+        <button id="dash-tab-users" type="button" role="tab" aria-selected="false" aria-controls="dash-users" tabindex="-1" data-dash-tab="users" hidden onclick="selectDashboardTab('users')">ผู้ใช้ <span data-dash-count="users">0</span></button>
+      </div>
+      <div id="dash-overview" class="dash-pane" role="tabpanel" aria-labelledby="dash-tab-overview" tabindex="0">
+        <div id="metrics" class="metric-grid"></div>
+        <article id="clinicalDashboard" class="panel mt hidden"></article>
+        <section id="dashboardInsights" class="hidden" aria-label="กราฟสรุปผลคัดกรอง"></section>
+        <div id="latestScreeningSummary" class="hidden" aria-live="polite"></div>
+        <article id="childScreeningPanel" class="panel mt"><div class="section-head"><div><h3 id="dashboardContentTitle">ข้อมูลเด็กและประวัติผลคัดกรอง</h3><p id="dashboardContentDescription">เปิดดูผลประเมินและคำตอบรายข้อ</p></div></div><div id="parentTable"></div></article>
+      </div>
+      <div id="dash-children" class="dash-pane panel" role="tabpanel" aria-labelledby="dash-tab-children" tabindex="0" hidden>
+        <div class="section-head"><div><h3>ข้อมูลเด็ก</h3><p>ค้นหาเด็กและเปิดดูข้อมูลสุขภาพพร้อมประวัติการประเมิน</p></div></div>
+        <div class="dash-toolbar"><div class="field"><label for="dashboardChildSearch">ค้นหาเด็ก</label><input id="dashboardChildSearch" type="search" placeholder="ชื่อ ชื่อเล่น หรือรหัสเด็ก" oninput="filterDashboardTables()"></div></div><div id="dashboardChildrenTable"></div>
+      </div>
+      <div id="dash-screenings" class="dash-pane panel" role="tabpanel" aria-labelledby="dash-tab-screenings" tabindex="0" hidden>
+        <div class="section-head"><div><h3>ผลคัดกรอง</h3><p>เลือกผลประเมินเพื่อดูคำตอบครบทุกข้อและบันทึกการทบทวน</p></div></div>
+        <div class="dash-toolbar"><div class="field"><label for="dashboardScreeningSearch">ค้นหาผลคัดกรอง</label><input id="dashboardScreeningSearch" type="search" placeholder="ชื่อเด็ก รหัสเด็ก หรือรหัสผลคัดกรอง" oninput="filterDashboardTables()"></div><div class="field"><label for="dashboardRiskFilter">ความเสี่ยง</label><select id="dashboardRiskFilter" onchange="filterDashboardTables()"><option value="">ทุกระดับ</option><option value="low">ต่ำ</option><option value="moderate">ปานกลาง</option><option value="high">สูง</option><option value="urgent-review">ควรทบทวนเร่งด่วน</option></select></div><div class="field"><label for="dashboardStatusFilter">สถานะ</label><select id="dashboardStatusFilter" onchange="filterDashboardTables()"><option value="">ทุกสถานะ</option><option value="new">รอทบทวน</option><option value="reviewing">กำลังทบทวน</option><option value="follow-up">ติดตามอาการ</option><option value="referred">ส่งต่อ</option><option value="closed">ปิดเคส</option></select></div></div><div id="dashboardScreeningsTable"></div>
+      </div>
+      <div id="dash-videos" class="dash-pane panel" role="tabpanel" aria-labelledby="dash-tab-videos" tabindex="0" hidden><div class="section-head"><div><h3>วิดีโอประกอบการประเมิน</h3><p>เปิดดูคลิปและบันทึกผลการทบทวนของเจ้าหน้าที่</p></div></div><div class="dash-toolbar"><div class="field"><label for="dashboardVideoSearch">ค้นหาวิดีโอ</label><input id="dashboardVideoSearch" type="search" placeholder="ชื่อเด็ก หรือชื่อไฟล์" oninput="filterDashboardTables()"></div></div><div id="dashboardVideosTable"></div></div>
+      <div id="dash-users" class="dash-pane panel" role="tabpanel" aria-labelledby="dash-tab-users" tabindex="0" hidden><div id="adminPanel"><div class="section-head"><div><h3>ผู้ใช้และสิทธิ์การเข้าถึง</h3><p>เลือกผู้ใช้เพื่อแก้ไขชื่อ บทบาท และสถานะบัญชี</p></div></div><div class="dash-toolbar"><div class="field"><label for="dashboardUserSearch">ค้นหาผู้ใช้</label><input id="dashboardUserSearch" type="search" placeholder="ชื่อ หรือรหัสผู้ใช้" oninput="filterDashboardTables()"></div></div><div id="adminDashboard"></div></div></div>
+      <dialog id="screeningEditor" class="dash-dialog" aria-label="ทบทวนผลคัดกรอง"><button type="button" class="dash-close" aria-label="ปิดหน้าต่าง" onclick="this.closest('dialog').close()">×</button>
               <h3>จัดการเคสคัดกรอง</h3>
               <div class="field mt">
-                <label for="adminScreeningId">Screening ID</label>
-                <input id="adminScreeningId" type="text" placeholder="เลือกจากตารางหรือกรอกเอง">
+                <label for="adminScreeningId">รหัสผลคัดกรอง</label>
+                <input id="adminScreeningId" type="text" readonly>
               </div>
               <div class="field mt">
                 <label for="adminClinicalStatus">สถานะทบทวน</label>
                 <select id="adminClinicalStatus">
-                  <option value="new">new</option>
-                  <option value="reviewing">reviewing</option>
-                  <option value="follow-up">follow-up</option>
-                  <option value="referred">referred</option>
-                  <option value="closed">closed</option>
+                  <option value="new">รอทบทวน</option>
+                  <option value="reviewing">กำลังทบทวน</option>
+                  <option value="follow-up">ติดตามอาการ</option>
+                  <option value="referred">ส่งต่อ</option>
+                  <option value="closed">ปิดเคส</option>
                 </select>
               </div>
               <div class="field mt">
@@ -1301,13 +1325,12 @@
                 <textarea id="adminReviewerNotes"></textarea>
               </div>
               <button type="button" class="btn primary mt" onclick="saveAdminScreeningReview()">บันทึกสถานะเคส</button>
-            </section>
-
-            <section class="panel soft">
+            </dialog>
+<dialog id="userEditor" class="dash-dialog" aria-label="แก้ไขผู้ใช้"><button type="button" class="dash-close" aria-label="ปิดหน้าต่าง" onclick="this.closest('dialog').close()">×</button>
               <h3>จัดการผู้ใช้</h3>
               <div class="field mt">
-                <label for="adminUserId">User ID</label>
-                <input id="adminUserId" type="text" placeholder="เลือกจากตาราง">
+                <label for="adminUserId">รหัสผู้ใช้</label>
+                <input id="adminUserId" type="text" readonly>
               </div>
               <div class="field mt">
                 <label for="adminDisplayName">ชื่อแสดงผล</label>
@@ -1315,40 +1338,39 @@
               </div>
               <div class="grid two mt">
                 <div class="field">
-                  <label for="adminUserRole">Role</label>
+                  <label for="adminUserRole">บทบาท</label>
                   <select id="adminUserRole">
-                    <option value="parent">parent</option>
-                    <option value="nurse">nurse</option>
-                    <option value="ent">ent</option>
-                    <option value="doctor">doctor</option>
-                    <option value="admin">admin</option>
+                    <option value="parent">ผู้ปกครอง</option>
+                    <option value="nurse">พยาบาล</option>
+                    <option value="ent">แพทย์ ENT</option>
+                    <option value="doctor">แพทย์</option>
+                    <option value="admin">ผู้ดูแลระบบ</option>
                   </select>
                 </div>
                 <div class="field">
-                  <label for="adminUserStatus">Status</label>
+                  <label for="adminUserStatus">สถานะบัญชี</label>
                   <select id="adminUserStatus">
-                    <option value="active">active</option>
-                    <option value="disabled">disabled</option>
+                    <option value="active">ใช้งานได้</option>
+                    <option value="disabled">ระงับใช้งาน</option>
                   </select>
                 </div>
               </div>
               <button type="button" class="btn primary mt" onclick="saveAdminUser()">บันทึกผู้ใช้</button>
-            </section>
-
-            <section class="panel soft">
+            </dialog>
+<dialog id="videoEditor" class="dash-dialog" aria-label="ทบทวนวิดีโอ"><button type="button" class="dash-close" aria-label="ปิดหน้าต่าง" onclick="this.closest('dialog').close()">×</button>
               <h3>จัดการวิดีโอ</h3>
               <div class="field mt">
-                <label for="adminVideoId">Video ID</label>
-                <input id="adminVideoId" type="text" placeholder="เลือกจากตาราง">
+                <label for="adminVideoId">รหัสวิดีโอ</label>
+                <input id="adminVideoId" type="text" readonly>
               </div>
               <div class="field mt">
-                <label for="adminVideoReviewStatus">สถานะ review</label>
+                <label for="adminVideoReviewStatus">สถานะการทบทวน</label>
                 <select id="adminVideoReviewStatus">
-                  <option value="pending-human-review">pending-human-review</option>
-                  <option value="reviewing">reviewing</option>
-                  <option value="accepted">accepted</option>
-                  <option value="needs-human-review">needs-human-review</option>
-                  <option value="rejected">rejected</option>
+                  <option value="pending-human-review">รอเจ้าหน้าที่ทบทวน</option>
+                  <option value="reviewing">กำลังทบทวน</option>
+                  <option value="accepted">ผ่านการทบทวน</option>
+                  <option value="needs-human-review">ต้องทบทวนเพิ่มเติม</option>
+                  <option value="rejected">ไม่ผ่านการทบทวน</option>
                 </select>
               </div>
               <div class="field mt">
@@ -1356,16 +1378,8 @@
                 <textarea id="adminVideoNotes"></textarea>
               </div>
               <button type="button" class="btn primary mt" onclick="saveAdminVideo()">บันทึกสถานะวิดีโอ</button>
-            </section>
-
-          </div>
-
-          <section class="panel soft">
-            <h3>ข้อมูลรวมสำหรับ Admin</h3>
-            <div id="adminDashboard" class="mt"></div>
-          </section>
-        </div>
-      </article>
+            </dialog>
+      <dialog id="dashboardDetails" class="dash-dialog wide" aria-labelledby="dashboardDetailsTitle"><button type="button" class="dash-close" aria-label="ปิดรายละเอียด" onclick="this.closest('dialog').close()">×</button><h3 id="dashboardDetailsTitle">รายละเอียด</h3><div id="dashboardDetailsBody" class="mt"></div></dialog>
     </section>
 
   </main>
@@ -1400,6 +1414,8 @@
       token: '',
       user: null,
       schema: null,
+      dashboardTab: 'overview',
+      dashboardPages: {},
       dashboard: null,
       dashboardPromise: null,
       dashboardLoadedAt: 0,
@@ -1573,6 +1589,9 @@
       if (state.token) callServer('revokeSession', [state.token]).catch(() => {});
       state.token = '';
       state.user = null;
+      state.dashboardTab = 'overview';
+      state.dashboardPages = {};
+      document.querySelectorAll('#dashboard dialog[open]').forEach(dialog => dialog.close());
       state.dashboard = null;
       state.dashboardPromise = null;
       state.dashboardLoadedAt = 0;
@@ -1884,6 +1903,7 @@
         return Promise.resolve(state.dashboard);
       }
       if (state.dashboardPromise) return state.dashboardPromise;
+      document.getElementById('dashboardRefresh').disabled = true;
       if (!state.dashboard) renderDashboardLoading();
 
       let task;
@@ -1908,9 +1928,11 @@
 
       state.dashboardPromise = task
         .catch(err => {
+          document.getElementById('dashboardUpdated').textContent = 'โหลดข้อมูลไม่สำเร็จ กรุณากดรีเฟรชเพื่อลองใหม่';
           toast(err.message || String(err));
         })
         .finally(() => {
+          document.getElementById('dashboardRefresh').disabled = false;
           state.dashboardPromise = null;
         });
       return state.dashboardPromise;
@@ -2193,43 +2215,119 @@
       }).join('')}</div>`;
     }
 
-    function renderStaffChildDashboard(data) {
-      const childById = {};
-      (data.children || []).forEach(child => { childById[child.childId] = child; });
-      const childRows = (data.children || []).map(child => `
-        <tr>
-          <td>${safe(child.childCode || child.childId)}</td>
-          <td>${safe(child.childName || child.nickname || '-')}</td>
-          <td>${safe(sexText(child.sex))}</td>
-          <td>${safe(dashboardValue(child.ageYears, ' ปี'))}</td>
-          <td>${safe(dashboardValue(child.weightKg, ' กก.'))}</td>
-          <td>${safe(dashboardValue(child.heightCm, ' ซม.'))}</td>
-          <td>${safe(dashboardValue(child.bmi))}</td>
-          <td>${safe(child.tonsilSize || '-')}</td>
-          <td>${safe(adenoidText(child.adenoidXrayResult))}</td>
-        </tr>
-      `).join('');
-      const screeningRows = (data.screenings || []).map(row => {
-        const child = childById[row.childId] || {};
-        return `
-          <tr>
-            <td>${safe(child.childName || child.nickname || child.childCode || row.childId)}</td>
-            <td>${safe(formatDate(row.submittedAt))}</td>
-            <td>${safe(dashboardValue(row.osa18Total))} / 126</td>
-            <td>${safe(scoreGroupText(row.osa18Group))}</td>
-            <td><span class="badge ${riskClass(row.riskLevel)}">${safe(riskText(row.riskLevel))}</span></td>
-            <td>${safe(clinicalStatusText(row.clinicalStatus))}</td>
-            <td>${safe(row.recommendation || '-')}</td>
-          </tr>
-        `;
-      }).join('');
+    function dashboardEmpty(title, description, action) {
+      return `<div class="dash-empty"><span class="dash-empty-symbol" aria-hidden="true">◇</span><h4>${safe(title)}</h4><p>${safe(description)}</p>${action || ''}</div>`;
+    }
 
-      return `
-        <div class="grid">
-          <section><h4 class="child-screening-title">ข้อมูลเด็ก</h4><div class="table-wrap"><table><thead><tr><th>รหัสเด็ก</th><th>ชื่อเด็ก</th><th>เพศ</th><th>อายุ</th><th>น้ำหนัก</th><th>ส่วนสูง</th><th>BMI</th><th>ทอนซิล</th><th>อะดีนอยด์</th></tr></thead><tbody>${childRows || '<tr><td colspan="9">ยังไม่มีข้อมูลเด็ก</td></tr>'}</tbody></table></div></section>
-          <section><h4 class="child-screening-title">ผลคัดกรอง</h4><div class="table-wrap"><table><thead><tr><th>เด็ก</th><th>วันที่คัดกรอง</th><th>OSA-18</th><th>กลุ่มคะแนน</th><th>ความเสี่ยง</th><th>สถานะ</th><th>คำแนะนำ</th></tr></thead><tbody>${screeningRows || '<tr><td colspan="7">ยังไม่มีผลคัดกรอง</td></tr>'}</tbody></table></div></section>
-        </div>
-      `;
+    function selectDashboardTab(name, focus) {
+      const allowed = ['overview', 'children', 'screenings', ...(isAdmin() ? ['videos', 'users'] : [])];
+      if (!allowed.includes(name)) name = 'overview';
+      state.dashboardTab = name;
+      document.querySelectorAll('[data-dash-tab]').forEach(button => {
+        const selected = button.dataset.dashTab === name;
+        button.hidden = !allowed.includes(button.dataset.dashTab);
+        button.setAttribute('aria-selected', String(selected));
+        button.tabIndex = selected ? 0 : -1;
+        if (selected && focus) { button.focus(); button.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+      });
+      document.querySelectorAll('.dash-pane').forEach(panel => { panel.hidden = panel.id !== 'dash-' + name; });
+    }
+
+    function dashboardTabKey(event) {
+      if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+      const buttons = [...document.querySelectorAll('[data-dash-tab]')].filter(button => !button.hidden);
+      const index = buttons.indexOf(event.target);
+      if (index < 0) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
+      selectDashboardTab(buttons[next].dataset.dashTab, true);
+    }
+
+    function filterDashboardTables() {
+      state.dashboardPages = {};
+      renderDashboardTables();
+      addDashboardScrollHints();
+    }
+
+    function dashboardPage(key, step) {
+      state.dashboardPages[key] = (state.dashboardPages[key] || 0) + step;
+      renderDashboardTables();
+      addDashboardScrollHints();
+    }
+
+    function showPendingScreenings() {
+      const pending = (state.dashboard?.screenings || []).some(row => !row.clinicalStatus || row.clinicalStatus === 'new');
+      document.getElementById('dashboardScreeningSearch').value = '';
+      document.getElementById('dashboardRiskFilter').value = '';
+      document.getElementById('dashboardStatusFilter').value = pending ? 'new' : '';
+      filterDashboardTables();
+      selectDashboardTab('screenings', true);
+    }
+
+    function dashboardTable(key, rows, headings, renderRow, total, emptyTitle, emptyDescription) {
+      if (!rows.length) return dashboardEmpty(total ? 'ไม่พบรายการที่ตรงกับการค้นหา' : emptyTitle, total ? 'ลองเปลี่ยนคำค้นหาหรือตัวกรองเพื่อแสดงรายการอื่น' : emptyDescription);
+      const size = 10;
+      const pages = Math.ceil(rows.length / size);
+      const page = Math.max(0, Math.min(state.dashboardPages[key] || 0, pages - 1));
+      state.dashboardPages[key] = page;
+      return `<div class="table-wrap"><table><caption class="dash-sr-only">${safe(emptyTitle.replace('ยังไม่มี', 'รายการ'))}</caption><thead><tr>${headings.map(title => `<th scope="col">${safe(title)}</th>`).join('')}</tr></thead><tbody>${rows.slice(page * size, (page + 1) * size).map(renderRow).join('')}</tbody></table></div><div class="dash-pagination"><span>แสดง ${page * size + 1}–${Math.min((page + 1) * size, rows.length)} จาก ${rows.length} รายการ${total !== rows.length ? ` (ทั้งหมด ${total})` : ''}</span><div><button type="button" class="btn ghost small" aria-label="หน้าก่อนหน้า" ${page === 0 ? 'disabled' : ''} onclick="dashboardPage('${key}',-1)">ก่อนหน้า</button><span> ${page + 1} / ${pages} </span><button type="button" class="btn ghost small" aria-label="หน้าถัดไป" ${page === pages - 1 ? 'disabled' : ''} onclick="dashboardPage('${key}',1)">ถัดไป</button></div></div>`;
+    }
+
+    function dashboardRole(role) {
+      return ({ parent: 'ผู้ปกครอง', nurse: 'พยาบาล', ent: 'แพทย์ ENT', doctor: 'แพทย์', admin: 'ผู้ดูแลระบบ' })[role] || role || '-';
+    }
+
+    function dashboardVideoStatus(status) {
+      return ({ uploaded: 'อัปโหลดแล้ว', pending: 'กำลังอัปโหลด', 'pending-human-review': 'รอทบทวน', reviewing: 'กำลังทบทวน', accepted: 'ผ่านการทบทวน', 'needs-human-review': 'ต้องทบทวนเพิ่มเติม', rejected: 'ไม่ผ่านการทบทวน' })[status] || status || '-';
+    }
+
+    function renderDashboardTables() {
+      const data = state.dashboard || {};
+      const children = data.children || [], screenings = data.screenings || [];
+      const users = isAdmin() ? (state.admin?.users || []) : [], videos = isAdmin() ? (state.admin?.videos || []) : [];
+      const byId = Object.fromEntries(children.map(child => [child.childId, child]));
+      const query = id => (document.getElementById(id)?.value || '').trim().toLocaleLowerCase('th');
+      const matches = (term, ...values) => values.join(' ').toLocaleLowerCase('th').includes(term);
+      const childLabel = child => `<strong>${safe(child.childName || child.nickname || '-')}</strong><small class="dash-cell-note">${safe(child.childCode || child.childId || '-')}</small>`;
+      document.querySelectorAll('[data-dash-count]').forEach(badge => { badge.textContent = ({ children, screenings, users, videos })[badge.dataset.dashCount].length; });
+      const childRows = children.filter(child => matches(query('dashboardChildSearch'), child.childName, child.nickname, child.childCode, child.childId));
+      document.getElementById('dashboardChildrenTable').innerHTML = dashboardTable('children', childRows, ['เด็ก / รหัส', 'เพศ', 'อายุ', 'น้ำหนัก / ส่วนสูง', 'BMI', 'รายละเอียด'], child => `<tr><td>${childLabel(child)}</td><td>${safe(sexText(child.sex))}</td><td>${safe(dashboardValue(child.ageYears, ' ปี'))}</td><td>${safe(dashboardValue(child.weightKg, ' กก.'))}<small class="dash-cell-note">${safe(dashboardValue(child.heightCm, ' ซม.'))}</small></td><td>${safe(dashboardValue(child.bmi))}</td><td><button type="button" class="btn small secondary" onclick="openDashboardChild('${jsArg(child.childId)}')">ดูข้อมูล</button></td></tr>`, children.length, 'ยังไม่มีข้อมูลเด็ก', 'กดลงทะเบียนเด็กที่ด้านบนเพื่อเริ่มบันทึกข้อมูล');
+      const risk = query('dashboardRiskFilter'), status = query('dashboardStatusFilter');
+      const screeningRows = screenings.filter(row => { const child = byId[row.childId] || {}; return matches(query('dashboardScreeningSearch'), child.childName, child.nickname, child.childCode, row.childId, row.screeningId) && (!risk || row.riskLevel === risk) && (!status || (row.clinicalStatus || 'new') === status); });
+      document.getElementById('dashboardScreeningsTable').innerHTML = dashboardTable('screenings', screeningRows, ['เด็ก / รหัส', 'วันที่ประเมิน', 'OSA-18', 'ความเสี่ยง', 'สถานะ', 'จัดการ'], row => `<tr><td>${childLabel(byId[row.childId] || { childId: row.childId })}</td><td>${safe(formatDate(row.submittedAt))}</td><td><strong>${safe(dashboardValue(row.osa18Total))}</strong><small class="dash-cell-note">จาก 126 คะแนน</small></td><td><span class="badge ${riskClass(row.riskLevel)}">${safe(riskText(row.riskLevel))}</span></td><td>${safe(clinicalStatusText(row.clinicalStatus || 'new'))}</td><td><div class="dash-row-actions"><button type="button" class="btn small secondary" onclick="openDashboardScreening('${jsArg(row.screeningId)}')">ดูผล</button>${hasClinicalAccess() ? `<button type="button" class="btn small ghost" onclick="fillScreeningReview('${jsArg(row.screeningId)}')">ทบทวน</button>` : ''}</div></td></tr>`, screenings.length, 'ยังไม่มีผลคัดกรอง', 'ผลจะปรากฏหลังจากลงทะเบียนเด็กและทำแบบคัดกรองเรียบร้อยแล้ว');
+      const videoRows = videos.filter(video => { const child = byId[video.childId] || {}; return matches(query('dashboardVideoSearch'), video.fileName, child.childName, child.nickname, child.childCode); });
+      document.getElementById('dashboardVideosTable').innerHTML = dashboardTable('videos', videoRows, ['เด็ก / รหัส', 'ไฟล์', 'วันที่อัปโหลด', 'สถานะ', 'จัดการ'], video => `<tr><td>${childLabel(byId[video.childId] || { childId: video.childId })}</td><td><button type="button" class="btn small ghost dash-filename" onclick="openVideo('${safeAttr(encodeURIComponent(video.videoId))}')">${safe(video.fileName)}</button></td><td>${safe(formatDate(video.uploadedAt))}</td><td>${safe(dashboardVideoStatus(video.reviewStatus))}<small class="dash-cell-note">${safe(dashboardVideoStatus(video.uploadStatus))}</small></td><td><button type="button" class="btn small secondary" onclick="fillVideoAdmin('${jsArg(video.videoId)}','${jsArg(video.reviewStatus || 'pending-human-review')}')">ทบทวน</button></td></tr>`, videos.length, 'ยังไม่มีวิดีโอ', 'คลิปที่อัปโหลดประกอบผลคัดกรองจะแสดงที่นี่เพื่อให้เจ้าหน้าที่ทบทวน');
+      const userRows = users.filter(user => matches(query('dashboardUserSearch'), user.displayName, user.email, user.userId));
+      document.getElementById('adminDashboard').innerHTML = dashboardTable('users', userRows, ['ชื่อผู้ใช้', 'บัญชี', 'บทบาท', 'สถานะ', 'จัดการ'], user => `<tr><td><strong>${safe(user.displayName || '-')}</strong></td><td>${safe(user.email || user.userId)}</td><td>${safe(dashboardRole(user.role))}</td><td><span class="badge ${user.status === 'active' ? 'low' : 'neutral'}">${user.status === 'active' ? 'ใช้งานได้' : 'ระงับใช้งาน'}</span></td><td><button type="button" class="btn small secondary" onclick="fillUserAdmin('${jsArg(user.userId)}','${jsArg(user.displayName || '')}','${jsArg(user.role || 'parent')}','${jsArg(user.status || 'active')}')">แก้ไข</button></td></tr>`, users.length, 'ยังไม่มีผู้ใช้', 'บัญชีผู้ใช้ที่ลงทะเบียนในระบบจะแสดงที่นี่');
+    }
+
+    function addDashboardScrollHints() {
+      document.querySelectorAll('#dashboardChildrenTable .table-wrap, #dashboardScreeningsTable .table-wrap, #dashboardVideosTable .table-wrap, #adminDashboard .table-wrap').forEach(table => {
+        if (table.previousElementSibling?.classList.contains('dash-scroll-hint')) return;
+        const hint = document.createElement('p');
+        hint.className = 'dash-scroll-hint';
+        hint.textContent = 'เลื่อนตารางซ้าย–ขวาเพื่อดูข้อมูลและปุ่มจัดการ';
+        table.before(hint);
+      });
+    }
+
+    function openDashboardChild(encodedId) {
+      const id = decodeURIComponent(encodedId);
+      const data = state.dashboard || {};
+      const child = (data.children || []).find(item => item.childId === id);
+      if (!child) return;
+      document.getElementById('dashboardDetailsTitle').textContent = 'ข้อมูลเด็กและประวัติผลคัดกรอง';
+      document.getElementById('dashboardDetailsBody').innerHTML = renderParentChildDashboard({ children: [child], screenings: (data.screenings || []).filter(row => row.childId === id), videos: (data.videos || []).filter(row => row.childId === id) });
+      document.getElementById('dashboardDetails').showModal();
+    }
+
+    function openDashboardScreening(encodedId) {
+      const row = (state.dashboard?.screenings || []).find(item => item.screeningId === decodeURIComponent(encodedId));
+      if (!row) return;
+      const child = (state.dashboard.children || []).find(item => item.childId === row.childId) || {};
+      document.getElementById('dashboardDetailsTitle').textContent = 'ผลคัดกรอง · ' + (child.childName || child.nickname || child.childCode || row.childId);
+      document.getElementById('dashboardDetailsBody').innerHTML = renderScreeningRecord(row, 0, 1);
+      document.getElementById('dashboardDetails').showModal();
     }
 
     function renderDashboardKpis(data) {
@@ -2239,7 +2337,7 @@
       const values = [
         { icon: 'เด็ก', label: 'เด็กทั้งหมด', value: metrics.children ?? (data.children || []).length, caption: 'ข้อมูลเด็กในระบบ', tone: 'blue' },
         { icon: 'ผล', label: 'ประเมินทั้งหมด', value: metrics.screenings ?? screenings.length, caption: 'ผลคัดกรองที่บันทึกแล้ว', tone: 'teal' },
-        { icon: 'OSA', label: 'คะแนนล่าสุด', value: latest.osa18Total ?? '-', caption: latest.screeningId ? 'คะแนนเต็ม 126' : 'ยังไม่มีผลคัดกรอง', tone: 'gold' },
+        hasClinicalAccess() ? { icon: 'รอ', label: 'รอทบทวน', value: screenings.filter(row => !row.clinicalStatus || row.clinicalStatus === 'new').length, caption: 'ผลประเมินที่ยังไม่ได้ทบทวน', tone: 'gold' } : { icon: 'OSA', label: 'คะแนนล่าสุด', value: latest.osa18Total ?? '-', caption: latest.screeningId ? 'คะแนนเต็ม 126' : 'ยังไม่มีผลคัดกรอง', tone: 'gold' },
         { icon: '!', label: 'เสี่ยงสูง / เร่งด่วน', value: metrics.highRisk ?? screenings.filter(row => row.riskLevel === 'high' || row.riskLevel === 'urgent-review').length, caption: 'ผลที่ต้องติดตามเป็นพิเศษ', tone: 'red' }
       ];
       return values.map(item => `
@@ -2304,7 +2402,7 @@
           <div class="dashboard-insight-body"><div class="risk-distribution">${riskRows}</div></div>
         </article>
         <article class="dashboard-insight-card">
-          <div class="dashboard-insight-head"><h3>แนวโน้มคะแนน OSA-18</h3><span>สูงสุด 8 ผลล่าสุด</span></div>
+          <div class="dashboard-insight-head"><h3>คะแนน OSA-18 ล่าสุด</h3><span>สูงสุด 8 ผลล่าสุด</span></div>
           <div class="dashboard-insight-body"><div class="osa-history-chart">${historyBars}</div></div>
         </article>
       `;
@@ -2312,210 +2410,51 @@
 
     function renderDashboard(data) {
       renderChildOptions();
-      renderLatestScreeningSummary(data, null);
+      const parent = !hasClinicalAccess();
+      document.getElementById('metrics').classList.remove('hidden');
+      document.getElementById('metrics').innerHTML = renderDashboardKpis(data);
       renderDashboardInsights(data);
-      const isParentDashboard = !!(state.user && state.user.role === 'parent');
-      const metricsElement = document.getElementById('metrics');
-      const contentTitle = document.getElementById('dashboardContentTitle');
-      const contentDescription = document.getElementById('dashboardContentDescription');
-      metricsElement.classList.remove('hidden');
-      metricsElement.innerHTML = renderDashboardKpis(data);
-
-      if (isParentDashboard) {
-        if (contentTitle) contentTitle.textContent = 'ข้อมูลเด็กและประวัติผลคัดกรอง';
-        if (contentDescription) contentDescription.textContent = 'ผลล่าสุดเปิดไว้ให้ทันที ส่วนผลครั้งก่อนสามารถกดเปิดดูคำตอบครบทุกข้อได้';
-        document.getElementById('parentTable').innerHTML = renderParentChildDashboard(data);
-      } else {
-        if (contentTitle) contentTitle.textContent = 'ข้อมูลเด็กและผลคัดกรอง';
-        if (contentDescription) contentDescription.textContent = 'ตารางสรุปเฉพาะข้อมูลเด็ก คะแนน ความเสี่ยง สถานะ และคำแนะนำ';
-        document.getElementById('parentTable').innerHTML = renderStaffChildDashboard(data);
-      }
-
-      document.getElementById('clinicalDashboard').classList.toggle('hidden', !hasClinicalAccess());
+      renderLatestScreeningSummary(parent ? data : {}, null);
+      document.getElementById('childScreeningPanel').classList.toggle('hidden', !parent);
+      document.getElementById('clinicalDashboard').classList.toggle('hidden', parent);
       document.getElementById('adminPanel').classList.toggle('hidden', !isAdmin());
+      if (parent) document.getElementById('parentTable').innerHTML = renderParentChildDashboard(data);
+      else renderClinicalFromAdmin(state.clinical || {});
+      renderDashboardTables();
+      selectDashboardTab(state.dashboardTab || 'overview');
+      addDashboardScrollHints();
+      document.getElementById('dashboardUpdated').textContent = 'อัปเดตล่าสุด ' + new Date(state.dashboardLoadedAt || Date.now()).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
     }
 
     function loadClinical(forceRefresh) {
       if (!hasClinicalAccess()) return Promise.resolve();
-      const panel = document.getElementById('clinicalDashboard');
-      panel.classList.remove('hidden');
-      return callServer('listClinicalDashboard', [state.token, Boolean(forceRefresh)])
-        .then(data => {
-          state.clinical = data;
-          const m = data.metrics || {};
-          const metricHtml = [
-            ['totalChildren', 'เด็กทั้งหมด'],
-            ['totalScreenings', 'แบบคัดกรองทั้งหมด'],
-            ['highRisk', 'เสี่ยงสูง / เร่งด่วน'],
-            ['pendingReview', 'รอทบทวน'],
-            ['videoUploaded', 'วิดีโอ'],
-            ['humanReviewNeeded', 'ต้อง human review']
-          ].map(item => `
-            <div class="metric"><span>${safe(item[1])}</span><strong>${safe(m[item[0]] || 0)}</strong></div>
-          `).join('');
-
-          const rows = (data.latest || []).map(row => `
-            <tr>
-              <td>${safe(row.childCode || row.nickname)}</td>
-              <td>${safe(formatDate(row.submittedAt))}</td>
-              <td><span class="badge ${riskClass(row.riskLevel)}">${safe(riskText(row.riskLevel))}</span></td>
-              <td>${safe(row.osa18Total)}</td>
-              <td>${safe(row.clinicalStatus)}</td>
-              <td><button type="button" class="btn small secondary" onclick="fillScreeningReview('${jsArg(row.screeningId)}')">เลือก</button></td>
-            </tr>
-          `).join('');
-
-          panel.innerHTML = `
-            <div class="section-head">
-              <div>
-                <div class="eyebrow">Clinical Review</div>
-                <h3>ภาพรวมเคสสำหรับทีมคลินิก</h3>
-                <p>แสดงเคสล่าสุดและสถานะที่ควรทบทวน</p>
-              </div>
-            </div>
-            <div class="metric-grid">${metricHtml}</div>
-            <div class="table-wrap mt">
-              <table>
-                <thead><tr><th>รหัสเด็ก</th><th>วันที่</th><th>ความเสี่ยง</th><th>OSA-18</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
-                <tbody>${rows || '<tr><td colspan="6" style="text-align:center;color:var(--mt)">ยังไม่มีข้อมูล</td></tr>'}</tbody>
-              </table>
-            </div>
-          `;
-        })
-        .catch(err => {
-          panel.innerHTML += `<div class="danger-note">${safe(err.message || String(err))}</div>`;
-        });
+      return callServer('listClinicalDashboard', [state.token, Boolean(forceRefresh)]).then(renderClinicalFromAdmin);
     }
 
     function renderClinicalFromAdmin(data) {
-      const panel = document.getElementById('clinicalDashboard');
-      if (!panel || !data) return;
-      panel.classList.remove('hidden');
       state.clinical = data;
-      const m = data.metrics || {};
-      const metricHtml = [
-        ['totalChildren', 'เด็กทั้งหมด'],
-        ['totalScreenings', 'แบบคัดกรองทั้งหมด'],
-        ['highRisk', 'เสี่ยงสูง / เร่งด่วน'],
-        ['pendingReview', 'รอทบทวน'],
-        ['videoUploaded', 'วิดีโอ'],
-        ['humanReviewNeeded', 'ต้อง human review']
-      ].map(item => `
-        <div class="metric"><span>${safe(item[1])}</span><strong>${safe(m[item[0]] || 0)}</strong></div>
-      `).join('');
-
-      const rows = (data.latest || []).map(row => `
-        <tr>
-          <td>${safe(row.childCode || row.nickname)}</td>
-          <td>${safe(formatDate(row.submittedAt))}</td>
-          <td><span class="badge ${riskClass(row.riskLevel)}">${safe(riskText(row.riskLevel))}</span></td>
-          <td>${safe(row.osa18Total)}</td>
-          <td>${safe(row.clinicalStatus)}</td>
-          <td><button type="button" class="btn small secondary" onclick="fillScreeningReview('${jsArg(row.screeningId)}')">เลือก</button></td>
-        </tr>
-      `).join('');
-
-      panel.innerHTML = `
-        <div class="section-head">
-          <div>
-            <div class="eyebrow">Clinical Review</div>
-            <h3>ภาพรวมเคสสำหรับทีมคลินิก</h3>
-            <p>แสดงเคสล่าสุดและสถานะที่ควรทบทวน</p>
-          </div>
-        </div>
-        <div class="metric-grid">${metricHtml}</div>
-        <div class="table-wrap mt">
-          <table>
-            <thead><tr><th>รหัสเด็ก</th><th>วันที่</th><th>ความเสี่ยง</th><th>OSA-18</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="6" style="text-align:center;color:var(--mt)">ยังไม่มีข้อมูล</td></tr>'}</tbody>
-          </table>
-        </div>
-      `;
+      if (!hasClinicalAccess()) return;
+      const screenings = (state.dashboard && state.dashboard.screenings) || [];
+      const pending = screenings.filter(row => !row.clinicalStatus || row.clinicalStatus === 'new').length;
+      const target = document.getElementById('clinicalDashboard');
+      target.classList.remove('hidden');
+      target.innerHTML = screenings.length
+        ? '<div class="dash-overview-callout"><div><span class="eyebrow">งานติดตาม</span><h3>ผลคัดกรองรอทบทวน ' + safe(pending) + ' รายการ</h3><p>เปิดผลคัดกรองเพื่อตรวจคำตอบและบันทึกสถานะการดูแล</p></div><button type="button" class="btn primary" onclick="showPendingScreenings()">' + (pending ? 'ดูรายการรอทบทวน' : 'ดูผลคัดกรองทั้งหมด') + '</button></div>'
+        : dashboardEmpty('เริ่มต้นดูแลเด็กคนแรก', 'เมื่อบันทึกแบบคัดกรองแล้ว คะแนน ความเสี่ยง และรายการติดตามจะแสดงที่นี่', '<button type="button" class="btn primary" onclick="showTab(&#39;child&#39;)">ลงทะเบียนเด็ก</button>');
     }
 
     function loadAdmin(forceRefresh) {
       if (!isAdmin()) return Promise.resolve();
-      return callServer('listAdminDashboard', [state.token, Boolean(forceRefresh)])
-        .then(data => {
-          state.admin = data;
-          const m = data.metrics || {};
-          const metricHtml = [
-            ['totalUsers', 'ผู้ใช้ทั้งหมด'],
-            ['activeParents', 'ผู้ปกครอง active'],
-            ['admins', 'Admin'],
-            ['totalChildren', 'เด็กทั้งหมด'],
-            ['totalScreenings', 'แบบคัดกรอง'],
-            ['totalVideos', 'วิดีโอ'],
-            ['highRisk', 'เสี่ยงสูง / เร่งด่วน'],
-            ['pendingClinicalReview', 'รอทบทวน']
-          ].map(item => `
-            <div class="metric"><span>${safe(item[1])}</span><strong>${safe(m[item[0]] || 0)}</strong></div>
-          `).join('');
-
-          const userRows = (data.users || []).map(user => `
-            <tr>
-              <td>${safe(user.email || user.userId)}</td>
-              <td>${safe(user.displayName)}</td>
-              <td>${safe(user.role)}</td>
-              <td>${safe(user.status)}</td>
-              <td><button type="button" class="btn small secondary" onclick="fillUserAdmin('${jsArg(user.userId)}','${jsArg(user.displayName || '')}','${jsArg(user.role || 'parent')}','${jsArg(user.status || 'active')}')">เลือก</button></td>
-            </tr>
-          `).join('');
-
-          const screeningRows = (data.screenings || []).slice(0, 30).map(row => `
-            <tr>
-              <td>${safe(formatDate(row.submittedAt))}</td>
-              <td><span class="badge ${riskClass(row.riskLevel)}">${safe(riskText(row.riskLevel))}</span></td>
-              <td>${safe(row.osa18Total)}</td>
-              <td>${safe(row.clinicalStatus)}</td>
-              <td><button type="button" class="btn small secondary" onclick="fillScreeningReview('${jsArg(row.screeningId)}')">เลือก</button></td>
-            </tr>
-          `).join('');
-
-          const videoRows = (data.videos || []).slice(0, 30).map(video => `
-            <tr>
-              <td>${safe(formatDate(video.uploadedAt))}</td>
-              <td><button type="button" class="btn small" onclick="openVideo('${safeAttr(encodeURIComponent(video.videoId))}')">${safe(video.fileName)}</button></td>
-              <td>${safe(video.uploadStatus)}</td>
-              <td>${safe(video.reviewStatus)}</td>
-              <td><button type="button" class="btn small secondary" onclick="fillVideoAdmin('${jsArg(video.videoId)}','${jsArg(video.reviewStatus || 'pending-human-review')}')">เลือก</button></td>
-            </tr>
-          `).join('');
-
-          document.getElementById('adminDashboard').innerHTML = `
-            <div class="metric-grid">${metricHtml}</div>
-            <h3 class="mt">ผู้ใช้</h3>
-            <div class="table-wrap mt">
-              <table>
-                <thead><tr><th>Email / User</th><th>ชื่อ</th><th>Role</th><th>Status</th><th>จัดการ</th></tr></thead>
-                <tbody>${userRows || '<tr><td colspan="5" style="text-align:center;color:var(--mt)">ยังไม่มีผู้ใช้</td></tr>'}</tbody>
-              </table>
-            </div>
-            <h3 class="mt">เคสล่าสุด</h3>
-            <div class="table-wrap mt">
-              <table>
-                <thead><tr><th>วันที่</th><th>ความเสี่ยง</th><th>OSA-18</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
-                <tbody>${screeningRows || '<tr><td colspan="5" style="text-align:center;color:var(--mt)">ยังไม่มีเคส</td></tr>'}</tbody>
-              </table>
-            </div>
-            <h3 class="mt">วิดีโอล่าสุด</h3>
-            <div class="table-wrap mt">
-              <table>
-                <thead><tr><th>วันที่</th><th>ไฟล์</th><th>อัปโหลด</th><th>Review</th><th>จัดการ</th></tr></thead>
-                <tbody>${videoRows || '<tr><td colspan="5" style="text-align:center;color:var(--mt)">ยังไม่มีวิดีโอ</td></tr>'}</tbody>
-              </table>
-            </div>
-          `;
-        })
-        .catch(err => toast(err.message || String(err)));
+      return callServer('listAdminDashboard', [state.token, Boolean(forceRefresh)]).then(data => { state.admin = data; });
     }
 
     function fillScreeningReview(screeningId) {
       const id = decodeURIComponent(screeningId || '');
       document.getElementById('adminScreeningId').value = id;
-      const row = ((state.admin && state.admin.screenings) || []).find(item => item.screeningId === id);
+      const row = ((state.dashboard && state.dashboard.screenings) || []).find(item => item.screeningId === id);
       if (row) document.getElementById('adminClinicalStatus').value = row.clinicalStatus || 'new';
-      toast('เลือกเคส ' + id);
+      document.getElementById('adminReviewerNotes').value = row?.reviewerNotes || '';
+      document.getElementById('screeningEditor').showModal();
     }
 
     function fillUserAdmin(userId, displayName, role, status) {
@@ -2523,15 +2462,19 @@
       document.getElementById('adminDisplayName').value = decodeURIComponent(displayName || '');
       document.getElementById('adminUserRole').value = decodeURIComponent(role || 'parent');
       document.getElementById('adminUserStatus').value = decodeURIComponent(status || 'active');
+      document.getElementById('userEditor').showModal();
     }
 
     function fillVideoAdmin(videoId, reviewStatus) {
       document.getElementById('adminVideoId').value = decodeURIComponent(videoId || '');
       document.getElementById('adminVideoReviewStatus').value = decodeURIComponent(reviewStatus || 'pending-human-review');
+      const row = (state.admin?.videos || []).find(video => video.videoId === decodeURIComponent(videoId));
+      document.getElementById('adminVideoNotes').value = row?.reviewerNotes || '';
+      document.getElementById('videoEditor').showModal();
     }
 
     function saveAdminScreeningReview() {
-      if (!isAdmin()) return toast('ต้องเข้าสู่ระบบ admin');
+      if (!hasClinicalAccess()) return toast('ต้องเข้าสู่ระบบเจ้าหน้าที่');
       const payload = {
         screeningId: val('adminScreeningId'),
         clinicalStatus: val('adminClinicalStatus'),
@@ -2540,6 +2483,7 @@
       if (!payload.screeningId) return toast('กรุณาระบุ Screening ID');
       callServer('saveClinicalReview', [state.token, payload])
         .then(() => {
+          document.getElementById('screeningEditor').close();
           toast('บันทึกสถานะเคสแล้ว');
           return loadDashboard(true);
         })
@@ -2557,6 +2501,7 @@
       if (!payload.userId) return toast('กรุณาระบุ User ID');
       callServer('updateUserByAdmin', [state.token, payload])
         .then(() => {
+          document.getElementById('userEditor').close();
           toast('บันทึกผู้ใช้แล้ว');
           return loadDashboard(true);
         })
@@ -2573,6 +2518,7 @@
       if (!payload.videoId) return toast('กรุณาระบุ Video ID');
       callServer('updateVideoReviewByAdmin', [state.token, payload])
         .then(() => {
+          document.getElementById('videoEditor').close();
           toast('บันทึกสถานะวิดีโอแล้ว');
           return loadDashboard(true);
         })
