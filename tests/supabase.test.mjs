@@ -87,7 +87,7 @@ test('register, assess, revisit and staff review through asynchronous Supabase A
     const registration = await app.registerChildPublic(child);
     const schema = (await app.apiBootstrap(registration.token)).schema;
     const answers = Object.fromEntries(schema.osa18Items.map(item => [item.key, 1]));
-    const assessment = await app.submitScreening(registration.token, { childId: registration.child.childId, osa18Answers: answers });
+    const assessment = await app.submitScreening(registration.token, { childId: registration.child.childId, osa18Answers: answers, coreAnswers: { loudSnoring: false }, riskFactors: { tonsilAdenoid: false } });
     assert.equal(assessment.score.osa18Total, 18);
     assert.equal((await app.listParentDashboard(registration.token, true)).screenings.length, 1);
     const login = await app.loginWithCid(child.childCidNumber, child.birthDate);
@@ -97,7 +97,13 @@ test('register, assess, revisit and staff review through asynchronous Supabase A
     const admin = await app.loginAdmin('staff', 'test-password');
     await app.saveClinicalReview(admin.token, { screeningId: assessment.screening.screeningId, clinicalStatus: 'reviewed', reviewerNotes: 'ทดสอบ' });
     assert.equal((await db.query('SELECT reviewer_notes FROM screenings')).rows[0].reviewer_notes, 'ทดสอบ');
-    assert((await app.listAdminDashboard(admin.token, true)).ok);
+    const dashboard = await app.listAdminDashboard(admin.token, true);
+    assert(dashboard.ok);
+    assert.deepEqual(dashboard.screenings[0].osa18Answers, answers);
+    assert.deepEqual(dashboard.screenings[0].coreAnswers, { loudSnoring: false });
+    assert.deepEqual(dashboard.screenings[0].riskFactors, { tonsilAdenoid: false });
+    assert.equal(dashboard.screenings[0].reviewerNotes, 'ทดสอบ');
+    await assert.rejects(app.listAdminDashboard(registration.token, true), /admin/);
     assert(requests.every(request => request.options.headers.apikey === 'sb_secret_test'));
   } finally { await db.close(); }
 });

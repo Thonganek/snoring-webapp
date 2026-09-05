@@ -779,7 +779,7 @@ async function listAdminDashboard(token, forceRefresh) {
     },
     users: users.map(publicUser_),
     children: children.map(publicChild_),
-    screenings: screenings.slice(0, 100).map(publicScreening_),
+    screenings: screenings.slice(0, 100).map(publicScreeningDetailed_),
     videos: videos.slice(0, 100).map(publicVideo_),
     clinical: clinical
   };
