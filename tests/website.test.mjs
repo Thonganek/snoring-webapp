@@ -19,6 +19,12 @@ test('local website serves root index and public config without exposing backend
     assert(html.includes('app-config.js'));
     assert(!html.includes('<?!='));
     assert.equal((await fetch('http://127.0.0.1:5173/app-config.js')).status, 200);
+    for (const name of ['report-workbook.js', 'exceljs.min.js']) {
+      const asset = await fetch('http://127.0.0.1:5173/assets/' + name);
+      assert.equal(asset.status, 200);
+      assert(asset.headers.get('content-type').includes('javascript'));
+    }
+    assert.equal((await fetch('http://127.0.0.1:5173/node_modules/exceljs/package.json')).status, 404);
     assert.equal((await fetch('http://127.0.0.1:5173/Supabase/.env.example')).status, 404);
     assert.equal((await fetch('http://127.0.0.1:5173/Supabase/functions/snoring-api/app.js')).status, 404);
   } finally { child.kill(); }

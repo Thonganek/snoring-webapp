@@ -64,6 +64,47 @@ async function fixture() {
 }
 const child = { childCidNumber: '1234567890123', birthDate: '2020-01-02', childName: 'เด็กทดสอบ', nickname: 'ทดสอบ', weightKg: 20, heightCm: 110 };
 
+test('report: full pagination, Thai date boundaries, scopes and clinical/admin permissions', async () => {
+  const { app, db } = await fixture();
+  try {
+    const parent = await app.registerChildPublic(child);
+    const admin = await app.loginAdmin('staff', 'test-password');
+    await assert.rejects(app.getReportData(parent.token, {}));
+    await assert.rejects(app.getReportData('invalid', {}));
+    const demo = await app.saveChildProfile(admin.token, { ...child, childCidNumber: '', childName: 'Demo report', consentVersion: 'demo-data' });
+    const demoId = demo.child.childId;
+    await db.query(`INSERT INTO screenings (screening_id,child_id,submitted_at,osa18_total,risk_level,clinical_status)
+      SELECT 'report-' || n, $1, '2026-09-04T17:00:00Z'::timestamptz,36,'low','new' FROM generate_series(1,1001) n`, [parent.child.childId]);
+    await db.query(`INSERT INTO screenings (screening_id,child_id,submitted_at) VALUES
+      ('before',$1,'2026-09-04T16:59:59Z'),('after',$1,'2026-09-05T17:00:00Z'),('demo',$2,'2026-09-05T16:59:59Z')`, [parent.child.childId, demoId]);
+    const all = await app.getReportData(admin.token, { includeAudit: true });
+    assert.equal(all.children.length, 2);
+    assert.equal(all.screenings.length, 1004);
+    assert.equal(new Set(all.screenings.map(row=>row.screeningId)).size, 1004);
+    assert.equal(all.children.filter(row=>row.isTestData).length, 1);
+    assert.equal(all.users.length, 2);
+    assert(all.auditLogs.length > 0);
+    assert.equal(all.schema.osa18Items.length, 18);
+    const serialized = JSON.stringify(all);
+    for (const secret of [child.childCidNumber, parent.token, admin.token, 'test-password', 'a-random-test-secret-with-at-least-32-characters']) assert(!serialized.includes(secret));
+    const day = await app.getReportData(admin.token, { from: '2026-09-05', to: '2026-09-05', scope: 'real' });
+    assert.equal(day.screenings.length, 1001);
+    assert.equal(day.children.length, 1);
+    assert(day.screenings.every(row=>row.screeningId.startsWith('report-')));
+    const testOnly = await app.getReportData(admin.token, { scope: 'test' });
+    assert.deepEqual(testOnly.screenings.map(row=>row.screeningId), ['demo']);
+    assert.equal(testOnly.children[0].childId, demoId);
+    for (const options of [{from:'2026-02-30'},{from:'2026-09-06',to:'2026-09-05'},{scope:'invalid'}]) await assert.rejects(app.getReportData(admin.token, options));
+    await app.updateUserByAdmin(admin.token, { userId: parent.user.userId, role: 'nurse' });
+    const clinical = await app.getReportData(parent.token, { includeAudit: true });
+    assert.equal(clinical.screenings.length, 1004);
+    assert.equal(clinical.adminSections, false);
+    assert.equal(clinical.filters.includeAudit, false);
+    assert.deepEqual(clinical.users, []);
+    assert.deepEqual(clinical.auditLogs, []);
+  } finally { await db.close(); }
+});
+
 test('Supabase database: repeatable migrations, RLS and private video bucket', async () => {
   const { db } = await fixture();
   try {

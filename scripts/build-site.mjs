@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import { createSiteHandler } from './site-handler.mjs';
+import { writeReportAssets } from './report-assets.mjs';
 
 const root = new URL('../', import.meta.url);
 const source = await fs.readFile(new URL('app-config.js', root), 'utf8');
@@ -23,15 +24,16 @@ await fs.mkdir(output, { recursive: true });
 // Refuse unexpected files instead of inadvertently publishing source or secrets.
 const publicFiles = ['index.html', 'app-config.js'];
 const existing = await fs.readdir(output);
-assert(existing.every(name => publicFiles.includes(name) || name === 'server'), 'dist contains unexpected files; review before publishing');
+assert(existing.every(name => publicFiles.includes(name) || name === 'server' || name === 'assets'), 'dist contains unexpected files; review before publishing');
 for (const name of publicFiles) await fs.copyFile(new URL(name, root), new URL(name, output));
 const server = new URL('server/', output);
 await fs.mkdir(server, { recursive: true });
 assert((await fs.readdir(server)).every(name => name === 'index.js'), 'Unexpected worker output');
 const html = await fs.readFile(new URL('index.html', output), 'utf8');
 const configSource = await fs.readFile(new URL('app-config.js', output), 'utf8');
+const assets = await writeReportAssets(output);
 const worker = `${createSiteHandler.toString()}
-export default { fetch: createSiteHandler(${JSON.stringify({ html, configSource, supabaseUrl: config.supabaseUrl, publishableKey: config.publishableKey })}) };
+export default { fetch: createSiteHandler(${JSON.stringify({ html, configSource, assets, supabaseUrl: config.supabaseUrl, publishableKey: config.publishableKey })}) };
 `;
 await fs.writeFile(new URL('index.js', server), worker);
 console.log('Public website and Sites worker built in dist/; only public assets are served.');

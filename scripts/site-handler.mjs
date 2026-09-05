@@ -1,9 +1,10 @@
 // Used by both the local server and the published Worker.
-export function createSiteHandler({ html, configSource, supabaseUrl, publishableKey, fetcher = (...args) => fetch(...args) }) {
+export function createSiteHandler({ html, configSource, supabaseUrl, publishableKey, assets = {}, fetcher = (...args) => fetch(...args) }) {
   const pages = new Map([
     ['/', [html, 'text/html; charset=utf-8']],
     ['/index.html', [html, 'text/html; charset=utf-8']],
-    ['/app-config.js', [configSource, 'text/javascript; charset=utf-8']]
+    ['/app-config.js', [configSource, 'text/javascript; charset=utf-8']],
+    ...Object.entries(assets)
   ]);
   const endpoint = new URL('/functions/v1/snoring-api', supabaseUrl).href;
   const json = (status, message) => Response.json({ ok: false, message }, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -33,9 +34,10 @@ export function createSiteHandler({ html, configSource, supabaseUrl, publishable
       let offset = 0;
       for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
       const body = new TextDecoder().decode(bytes);
-      try { JSON.parse(body); } catch { return json(400, 'Invalid JSON'); }
+      let payload;
+      try { payload = JSON.parse(body); } catch { return json(400, 'Invalid JSON'); }
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
+      const timeout = setTimeout(() => controller.abort(), payload?.method === 'getReportData' ? 120000 : 30000);
       try {
         const upstream = await fetcher(endpoint, {
           method: 'POST', headers: { 'Content-Type': 'application/json', apikey: publishableKey },

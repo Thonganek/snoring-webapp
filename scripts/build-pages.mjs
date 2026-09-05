@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
+import { writeReportAssets } from './report-assets.mjs';
 
 const root = new URL('../', import.meta.url);
 const source = await fs.readFile(new URL('app-config.js', root), 'utf8');
@@ -17,8 +18,9 @@ if (!config.publishableKey?.startsWith('sb_publishable_')) {
 // GitHub Pages serves static files. Its browser calls the Supabase Edge API directly.
 const output = new URL('dist-pages/', root);
 await fs.mkdir(output, { recursive: true });
-assert((await fs.readdir(output)).every(name => ['index.html', 'app-config.js', '.nojekyll'].includes(name)), 'Unexpected files in Pages build');
+assert((await fs.readdir(output)).every(name => ['index.html', 'app-config.js', '.nojekyll', 'assets'].includes(name)), 'Unexpected files in Pages build');
 await fs.copyFile(new URL('index.html', root), new URL('index.html', output));
 await fs.writeFile(new URL('app-config.js', output), '// Public configuration only.\nwindow.SNORING_CONFIG = Object.freeze(' + JSON.stringify({ ...config, apiMode: 'supabase' }, null, 2) + ');\n');
 await fs.writeFile(new URL('.nojekyll', output), '');
-console.log('GitHub Pages website built in dist-pages/ (three public files only).');
+await writeReportAssets(output);
+console.log('GitHub Pages website built in dist-pages/ with public report assets.');

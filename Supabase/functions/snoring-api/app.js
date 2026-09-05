@@ -785,6 +785,55 @@ async function listAdminDashboard(token, forceRefresh) {
   };
   return result;
 }
+async function getReportData(token, options) {
+  const session = await requireSession_(token);
+  requireClinicalRole_(session.user);
+  options = options || {};
+  const dateValue = value => {
+    if (!value) return '';
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || isNaN(Date.parse(value)) || new Date(value).toISOString().slice(0, 10) !== value) throw new Error('วันที่รายงานไม่ถูกต้อง');
+    return value;
+  };
+  const from = dateValue(options.from), to = dateValue(options.to);
+  if (from && to && from > to) throw new Error('วันเริ่มต้นต้องไม่เกินวันสิ้นสุด');
+  const scope = options.scope || 'all';
+  if (!['all', 'real', 'test'].includes(scope)) throw new Error('ขอบเขตข้อมูลไม่ถูกต้อง');
+  const inRange = value => {
+    if (!from && !to) return true;
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return false;
+    const day = new Date(date.getTime() + 7 * 3600000).toISOString().slice(0, 10);
+    return (!from || day >= from) && (!to || day <= to);
+  };
+  const admin = session.user.role === 'admin';
+  // Full paginated reads: report data must never inherit dashboard display limits.
+  const [allChildren, allScreenings, allVideos, allUsers, allLogs] = await Promise.all([
+    readObjects_(APP_CONFIG.tables.children), readObjects_(APP_CONFIG.tables.screenings), readObjects_(APP_CONFIG.tables.videos),
+    admin ? readObjects_(APP_CONFIG.tables.users) : Promise.resolve([]),
+    admin && options.includeAudit ? readObjects_(APP_CONFIG.tables.auditLogs) : Promise.resolve([])
+  ]);
+  const isTest = child => child.consentVersion === 'demo-data';
+  let children = allChildren.filter(child => scope === 'all' || (scope === 'test' ? isTest(child) : !isTest(child)));
+  const childIds = new Set(children.map(child => child.childId));
+  const screenings = allScreenings.filter(row => childIds.has(row.childId) && inRange(row.submittedAt)).sort(sortByDateDesc_('submittedAt'));
+  if (from || to) { const assessed = new Set(screenings.map(row => row.childId)); children = children.filter(child => assessed.has(child.childId)); }
+  const includedIds = new Set(children.map(child => child.childId));
+  const screeningIds = new Set(screenings.map(row => row.screeningId));
+  const videos = allVideos.filter(row => includedIds.has(row.childId) && screeningIds.has(row.screeningId)).sort(sortByDateDesc_('uploadedAt'));
+  const result = {
+    exportedAt: iso_(new Date()), exportedBy: { displayName: session.user.displayName, role: session.user.role },
+    filters: { from, to, scope, includeAudit: !!(admin && options.includeAudit) }, schema: getQuestionnaireSchema_(),
+    children: children.map(child => ({ ...publicChild_(child), createdAt: child.createdAt, updatedAt: child.updatedAt, isTestData: isTest(child), comorbidities: parseJsonObject_(child.comorbiditiesJson) })),
+    screenings: screenings.map(publicScreeningDetailed_),
+    videos: videos.map(video => ({ ...publicVideo_(video), childId: video.childId, mimeType: video.mimeType, sizeBytes: video.sizeBytes, reviewerNotes: video.reviewerNotes || '', updatedAt: video.updatedAt })),
+    users: admin ? allUsers.map(user => ({ ...publicUser_(user), createdAt: user.createdAt, lastLoginAt: user.lastLoginAt })) : [],
+    auditLogs: allLogs.filter(row => inRange(row.createdAt)).map(row => ({ logId: row.logId, actorUserId: row.actorUserId, action: row.action, targetType: row.targetType, targetId: row.targetId, createdAt: row.createdAt })),
+    adminSections: admin
+  };
+  await audit_(session.user.userId, 'exportReport', 'Report', '', { ...result.filters, children: children.length, screenings: screenings.length });
+  return result;
+}
+
 async function saveClinicalReview(token, payload) {
   const session = await requireSession_(token);
   requireClinicalRole_(session.user);
@@ -1269,5 +1318,5 @@ async function getVideoUrl(token, videoId) {
   return data.signedUrl;
 }
 
-return { apiBootstrap, loginWithCid, loginParentLookup, loginAdmin, registerChildPublic, saveChildProfile, submitScreening, listParentDashboard, listClinicalDashboard, listAdminDashboard, saveClinicalReview, updateUserByAdmin, updateVideoReviewByAdmin, prepareVideoUpload, completeVideoUpload, getVideoUrl, revokeSession };
+return { apiBootstrap, loginWithCid, loginParentLookup, loginAdmin, registerChildPublic, saveChildProfile, submitScreening, listParentDashboard, listClinicalDashboard, listAdminDashboard, getReportData, saveClinicalReview, updateUserByAdmin, updateVideoReviewByAdmin, prepareVideoUpload, completeVideoUpload, getVideoUrl, revokeSession };
 }
