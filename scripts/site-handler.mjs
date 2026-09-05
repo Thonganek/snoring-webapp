@@ -1,5 +1,5 @@
 // Used by both the local server and the published Worker.
-export function createSiteHandler({ html, configSource, supabaseUrl, publishableKey, fetcher = fetch }) {
+export function createSiteHandler({ html, configSource, supabaseUrl, publishableKey, fetcher = (...args) => fetch(...args) }) {
   const pages = new Map([
     ['/', [html, 'text/html; charset=utf-8']],
     ['/index.html', [html, 'text/html; charset=utf-8']],
@@ -34,18 +34,21 @@ export function createSiteHandler({ html, configSource, supabaseUrl, publishable
       for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
       const body = new TextDecoder().decode(bytes);
       try { JSON.parse(body); } catch { return json(400, 'Invalid JSON'); }
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
       try {
         const upstream = await fetcher(endpoint, {
           method: 'POST', headers: { 'Content-Type': 'application/json', apikey: publishableKey },
-          body, redirect: 'error', signal: AbortSignal.timeout(30000)
+          body, redirect: 'error', signal: controller.signal
         });
         if (!upstream.headers.get('content-type')?.includes('application/json')) return json(502, 'ระบบฐานข้อมูลตอบกลับไม่สมบูรณ์ กรุณาลองใหม่');
         return new Response(await upstream.text(), { status: upstream.status, headers: {
           'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'
         } });
-      } catch {
+      } catch (error) {
+        console.error('Supabase gateway request failed:', error.name, error.message);
         return json(503, 'เชื่อมต่อฐานข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
-      }
+      } finally { clearTimeout(timeout); }
     }
     const item = pages.get(path);
     if (!item || !['GET', 'HEAD'].includes(request.method)) return new Response('Not found', { status: 404 });
