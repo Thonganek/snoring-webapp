@@ -31,7 +31,11 @@ npm start
 
 เปิด `http://localhost:5173` หรือ `http://127.0.0.1:5173` ห้ามเปิดด้วยการดับเบิลคลิกไฟล์ `index.html` เพราะ API ต้องทำงานผ่านเซิร์ฟเวอร์
 
-เว็บไซต์ที่เผยแพร่: https://snoring-child-screening.jarunyoo.chatgpt.site
+เว็บไซต์ผ่าน GitHub Pages: https://thonganek.github.io/snoring-webapp/
+
+เว็บไซต์ผ่าน Sites: https://snoring-child-screening.jarunyoo.chatgpt.site
+
+สำหรับ GitHub Pages ให้รัน `npm run build:pages` แล้วนำเฉพาะ 3 ไฟล์ใน `dist-pages/` ไปไว้ที่รากของ branch `gh-pages` ตั้งค่า Pages ให้เผยแพร่จาก branch นี้ `/` ตัว build จะตั้งให้เรียก Supabase Edge Function โดยตรง และต้องเพิ่ม `https://thonganek.github.io` ใน `APP_ALLOWED_ORIGINS` ของ Supabase ส่วนฐานข้อมูลและวิดีโอยังคงอยู่ใน Supabase พร้อมตรวจสิทธิ์ตามเดิม ห้ามนำไฟล์รหัสผ่านหรือ `.env` ไปใส่ใน branch นี้
 
 สำหรับ Sites ให้รัน `npm run build:site` แล้วเผยแพร่ผลลัพธ์ใน `dist/` พร้อม Worker ที่ `dist/server/index.js` ซึ่งให้บริการ `/api` ด้วย การอัปโหลดเฉพาะไฟล์ HTML ไปยัง static hosting จะไม่เพียงพอ เซิร์ฟเวอร์ส่งต่อเฉพาะ JSON และ public key ไปยัง Supabase โดยไม่ส่ง cookie หรือรหัสอนุญาตของเว็บไซต์
 

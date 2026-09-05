@@ -1443,10 +1443,15 @@
 
     async function callServer(name, args) {
       if (location.protocol === 'file:') throw new Error('กรุณาเปิดผ่านลิงก์เว็บไซต์ หรือรัน npm start แล้วเปิด http://localhost:5173');
+      const config = window.SNORING_CONFIG || {};
+      const direct = config.apiMode === 'supabase';
+      const endpoint = direct ? config.supabaseUrl.replace(/\/+$/, '') + '/functions/v1/snoring-api' : '/api';
+      const headers = { 'Content-Type': 'application/json' };
+      if (direct) headers.apikey = config.publishableKey;
       let response;
       try {
-        response = await fetch('/api', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+        response = await fetch(endpoint, {
+          method: 'POST', headers,
           body: JSON.stringify({ method: name, args: args || [] }),
           signal: AbortSignal.timeout(35000)
         });
