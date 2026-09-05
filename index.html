@@ -2586,7 +2586,7 @@
       if (button.disabled || !isAdmin()) return;
       const id = childDeleteId; button.disabled = true;
       try {
-        await callServer('setChildTrash',[state.token,id,true,id]);
+        await callServer('setChildTrash',[state.token,{childId:id,deleted:true,confirmation:id}]);
         document.getElementById('childDeleteDialog').close();
         await loadDashboard(true); toast('ย้ายข้อมูลเด็กและประวัติไปถังขยะแล้ว');
       } catch(error) {document.getElementById('childDeleteStatus').textContent = error.message;}
@@ -2607,7 +2607,7 @@
       if (!isAdmin() || button.disabled) return;
       button.disabled = true; const id = decodeURIComponent(encodedId);
       try {
-        await callServer('setChildTrash',[state.token,id,false,id]);
+        await callServer('setChildTrash',[state.token,{childId:id,deleted:false,confirmation:id}]);
         await loadDashboard(true); await openChildTrash(); toast('กู้คืนข้อมูลเด็กและประวัติแล้ว');
       } catch(error) {document.getElementById('childTrashStatus').textContent=error.message;button.disabled=false;}
     }

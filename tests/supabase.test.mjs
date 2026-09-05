@@ -69,7 +69,7 @@ async function fixture() {
 const child = { childCidNumber: '1234567890123', birthDate: '2020-01-02', childName: 'เด็กทดสอบ', nickname: 'ทดสอบ', weightKg: 20, heightCm: 110 };
 
 test('child editing preserves identity/history; trash atomically hides linked records and restores them', async () => {
-  const { app, db } = await fixture();
+  const { app, db, handler } = await fixture();
   try {
     const parent=await app.registerChildPublic(child);
     const admin=await app.loginAdmin('staff','test-password');
@@ -91,11 +91,12 @@ test('child editing preserves identity/history; trash atomically hides linked re
     const sid=assessment.screening.screeningId;
     await db.query("INSERT INTO screenings (screening_id,child_id,submitted_at,osa18_total,risk_level,clinical_status) SELECT 'history-'||n,$1,now(),36,'low','new' FROM generate_series(1,160) n",[id]);
     const video=await app.prepareVideoUpload(parent.token,{screeningId:sid,fileName:'test.mp4',mimeType:'video/mp4',sizeBytes:100});
-    await assert.rejects(app.setChildTrash(parent.token,id,true,id));
+    await assert.rejects(app.setChildTrash(parent.token,{childId:id,deleted:true,confirmation:id}));
     await assert.rejects(app.listChildTrash(parent.token));
     await assert.rejects(app.getChildForEdit(parent.token,id));
-    await assert.rejects(app.setChildTrash(admin.token,id,true,'wrong'));
-    await app.setChildTrash(admin.token,id,true,id);
+    await assert.rejects(app.setChildTrash(admin.token,{childId:id,deleted:true,confirmation:'wrong'}));
+    const archivedResponse = await handler(new Request('https://test/api', {method:'POST',headers:{origin:'http://localhost:5173'},body:JSON.stringify({method:'setChildTrash',args:[admin.token,{childId:id,deleted:true,confirmation:id}]})}));
+    assert.equal(archivedResponse.status,200);
     const hidden=await app.listAdminDashboard(admin.token,true);
     assert.equal(hidden.metrics.totalChildren,0);
     assert.equal(hidden.metrics.totalScreenings,0);
@@ -109,7 +110,7 @@ test('child editing preserves identity/history; trash atomically hides linked re
     await assert.rejects(db.query("INSERT INTO screenings (screening_id,child_id) VALUES ('late',$1)",[id]));
     assert.equal((await app.listChildTrash(admin.token)).length,1);
     assert.equal((await db.query('SELECT count(*)::int AS n FROM screenings WHERE deleted_at IS NOT NULL')).rows[0].n,161);
-    await app.setChildTrash(admin.token,id,false,id);
+    await app.setChildTrash(admin.token,{childId:id,deleted:false,confirmation:id});
     const restored=await app.listAdminDashboard(admin.token,true);
     assert.equal(restored.metrics.totalScreenings,161);
     assert.equal(restored.metrics.totalVideos,1);
@@ -120,7 +121,7 @@ test('child editing preserves identity/history; trash atomically hides linked re
     await assert.rejects(app.saveChildProfile(other.token,{childId:id,notes:'No'}));
     await app.updateUserByAdmin(admin.token,{userId:other.user.userId,role:'nurse'});
     await app.saveChildProfile(other.token,{childId:id,notes:'Clinical edit'});
-    await assert.rejects(app.setChildTrash(other.token,id,true,id));
+    await assert.rejects(app.setChildTrash(other.token,{childId:id,deleted:true,confirmation:id}));
     const log=(await db.query("SELECT action FROM audit_logs WHERE action IN ('trashChild','restoreChild')")).rows;
     assert.equal(log.length,2);
   } finally {await db.close();}

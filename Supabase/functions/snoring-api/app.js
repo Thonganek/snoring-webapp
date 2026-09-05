@@ -477,7 +477,8 @@ async function listChildTrash(token) {
   requireAdminRole_(session.user);
   return (await fetchSupabaseRows_(APP_CONFIG.tables.children, { includeDeleted: true })).filter(child => child.deletedAt).map(child => ({ ...publicChild_(child), deletedAt: child.deletedAt }));
 }
-async function setChildTrash(token, childId, deleted, confirmation) {
+async function setChildTrash(token, payload) {
+  const { childId, deleted, confirmation } = payload || {};
   const session = await requireSession_(token);
   requireAdminRole_(session.user);
   if (typeof deleted !== 'boolean' || confirmation !== childId) throw new Error('กรุณายืนยันรายการเด็ก');
