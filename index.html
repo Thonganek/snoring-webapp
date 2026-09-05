@@ -519,46 +519,163 @@
   .metric span { font-size: .8rem; color: var(--mt); }
   .metric strong { font-size: 1.4rem; font-weight: 700; color: var(--primary-dark); }
 
-  /* Dashboard workspace */
-  .dash-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 6px; margin: 24px 0; border: 1px solid var(--line); border-radius: 16px; background: #eaf2f1; }
-  .dash-tabs button { flex: 1 0 auto; display: flex; align-items: center; justify-content: center; gap: 9px; border: 0; border-radius: 11px; padding: 13px 18px; background: transparent; color: #496562; font: inherit; font-size: .92rem; font-weight: 600; cursor: pointer; }
-  .dash-tabs button[aria-selected="true"] { color: #006b64; background: white; box-shadow: 0 2px 8px #163c3312; }
-  .dash-tabs button:hover { background: #ffffffa8; }
-  .dash-tabs button span { padding: 1px 8px; border-radius: 6px; background: #dae8e5; font-size: .75rem; }
+  /* Dashboard workspace: presentation only, shared by all existing dashboard actions. */
+  body[data-view="dashboard"] { background: #f4f7f7; }
+  body[data-view="dashboard"] .app-main { max-width: 1560px; padding-top: 28px; }
+  .dashboard-shell { display: grid; grid-template-columns: 216px minmax(0, 1fr); gap: 32px; align-items: start; }
+  .dashboard-main { min-width: 0; }
+  .dashboard-sidebar { position: sticky; top: 98px; padding: 24px 14px 14px; border: 1px solid #e0e9e6; border-radius: 20px; background: #fff; }
+  .dash-sidebar-brand { display: flex; gap: 12px; align-items: center; padding: 0 10px 25px; border-bottom: 1px solid #edf2f0; }
+  .dash-sidebar-brand strong { display: block; font-size: 1rem; color: #163f39; }
+  .dash-sidebar-brand small { display: block; font-size: .61rem; letter-spacing: 1.5px; color: #6b8780; margin-top: 3px; }
+  .dash-brand-icon { display: grid; place-items: center; background: #e9f5f0; color: #087b6d; width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0; }
+  .dash-brand-icon svg { width: 23px; height: 23px; }
+  .dash-sidebar-caption { padding: 23px 12px 12px; color: #81958e; font-size: .73rem; }
+  .dash-tabs { display: flex; flex-direction: column; gap: 7px; }
+  .dash-tabs button { position: relative; display: flex; align-items: center; gap: 11px; width: 100%; border: 0; border-radius: 11px; padding: 13px 12px; background: transparent; color: #5f776f; font: inherit; font-size: .88rem; font-weight: 500; cursor: pointer; text-align: left; transition: background .18s, color .18s; }
+  .dash-tabs button > svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .dash-tabs button .dash-nav-label { flex: 1; white-space: nowrap; }
+  .dash-tabs button [data-dash-count] { display: grid; place-items: center; min-width: 23px; height: 23px; padding: 0 5px; border-radius: 6px; background: #f0f4f2; color: #7d928a; font-size: .71rem; font-variant-numeric: tabular-nums; }
+  .dash-tabs button[aria-selected="true"] { color: #006759; background: #e7f4ed; font-weight: 700; }
+  .dash-tabs button[aria-selected="true"]::before { content: ''; position: absolute; left: -14px; top: 13px; bottom: 13px; width: 3px; border-radius: 0 3px 3px 0; background: #078573; }
+  .dash-tabs button[aria-selected="true"] [data-dash-count] { color: #087061; background: #cfe9dc; }
+  .dash-tabs button:hover { background: #eff6f2; color: #126751; }
   .dash-tabs button[hidden], .dash-pane[hidden] { display: none !important; }
-  .dash-tabs button:focus-visible, .dash-close:focus-visible { outline: 3px solid #008b80; outline-offset: -3px; }
-  .dash-pane { min-width: 0; }
-  .dash-pane:focus { outline: none; }
+  .dash-tabs button:focus-visible, .dash-close:focus-visible { outline: 3px solid #16967f; outline-offset: 2px; }
+  .dash-sidebar-note { position: relative; overflow: hidden; margin-top: 65px; padding: 12px 15px 19px; border-radius: 15px; background: linear-gradient(145deg, #086f66, #10463f); color: white; }
+  .dash-sidebar-note > svg { display: block; width: 100%; height: 88px; margin-bottom: 8px; }
+  .dash-sidebar-note strong { font-size: .86rem; font-weight: 600; }
+  .dash-sidebar-note p { font-size: .73rem; line-height: 1.8; color: #c1e0d5; margin: 6px 0 0; }
+  #dashboard .dashboard-hero { align-items: center; padding: 5px 0 24px; margin-bottom: 22px; border-bottom: 1px solid #e1e9e5; gap: 18px; }
+  #dashboard .dashboard-hero h2 { margin-top: 12px; margin-bottom: 6px; font-size: clamp(1.25rem, 1.7vw, 1.7rem); letter-spacing: -.4px; line-height: 1.4; }
+  #dashboard .dashboard-hero .eyebrow { background: transparent; border-radius: 0; padding: 0; color: #67867b; font-size: .66rem; letter-spacing: .7px; }
+  #dashboard .dashboard-hero p { font-size: .84rem; color: #6d837c; }
+  .dash-updated { display: flex; align-items: center; gap: 7px; color: #799084; margin-top: 12px; font-size: .72rem; }
+  .dash-updated::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #89a598; }
   .dash-actions, .dash-row-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .dash-updated { display: block; color: var(--mt); margin-top: 10px; font-size: .8rem; }
-  .dash-toolbar { display: flex; flex-wrap: wrap; gap: 14px; margin: 22px 0; padding: 16px; background: #f4f8f7; border: 1px solid #e7efed; border-radius: 12px; }
-  .dash-toolbar .field { flex: 1 1 160px; min-width: 0; }
-  .dash-toolbar .field:first-child { flex: 2 1 260px; }
-  .dash-toolbar input, .dash-toolbar select { background: white; }
-  .dash-cell-note { display: block; color: var(--mt); font-size: .76rem; margin-top: 4px; }
-  .dash-pane th { white-space: nowrap; }
-  .dash-pane td { min-width: 90px; }
-  .dash-pane td:first-child { min-width: 160px; }
-  .dash-pane .table-wrap { max-width: 100%; }
-  .dash-empty { padding: 38px 20px; text-align: center; color: #4c6763; }
-  .dash-empty-symbol { display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: #e9f4f0; color: #188176; font-size: 2rem; margin-bottom: 14px; }
-  .dash-empty h4 { color: var(--ink); font-size: 1.1rem; margin: 0 0 8px; }
-  .dash-empty p { max-width: 440px; margin: 0 auto 18px; font-size: .9rem; line-height: 1.8; }
-  .dash-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; color: var(--mt); font-size: .8rem; }
+  #dashboard .btn { border-radius: 10px; padding: 10px 17px; font-size: .85rem; }
+  #dashboard .btn.primary { box-shadow: 0 4px 10px #006b6818; }
+  #dashboard .btn.small { padding: 6px 11px; font-size: .77rem; }
+  #dashboard #dashboardRefresh { background: white; border-color: #dbe6e0; color: #546f62; box-shadow: none; }
+  #dashboard #metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  #dashboard .dashboard-kpi { position: relative; overflow: hidden; min-width: 0; gap: 12px; border: 1px solid #e1eae5; border-radius: 16px; padding: 20px; box-shadow: 0 3px 12px #153f2b03; }
+  #dashboard .dashboard-kpi::after { content: ''; position: absolute; width: 76px; height: 76px; border-radius: 50%; bottom: -44px; right: -20px; background: #e7f3ed; pointer-events: none; }
+  #dashboard .dashboard-kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 20px #153f2b09; }
+  #dashboard .dashboard-kpi-top { align-items: flex-start; flex-direction: column; gap: 14px; color: #657e73; font-size: .79rem; font-weight: 500; }
+  #dashboard .dashboard-kpi-icon { width: 37px; height: 37px; border-radius: 11px; }
+  #dashboard .dashboard-kpi-icon svg { width: 20px; height: 20px; }
+  #dashboard .dashboard-kpi > strong { font-size: 2.1rem; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; color: #173f31; }
+  #dashboard .dashboard-kpi > small { font-size: .71rem; color: #7a8f84; line-height: 1.6; }
+  #dashboard .dashboard-kpi.gold { background: #fffcf6; border-color: #f0e6d0; }
+  #dashboard .dashboard-kpi.gold::after { background: #f7ecd5; }
+  #dashboard .dashboard-kpi.gold > strong { color: #9f6616; }
+  #dashboard .dashboard-kpi.red { background: #fffafa; border-color: #f1dfe1; }
+  #dashboard .dashboard-kpi.red::after { background: #f8e4e6; }
+  #dashboard .dashboard-kpi.red > strong { color: #b53d54; }
+  #dashboard .panel, #dashboard .dashboard-insight-card { border-color: #e0e9e4; border-radius: 18px; box-shadow: 0 3px 12px #153f2b03; }
+  #dashboard .dash-pane.panel { padding: 25px; }
+  #dashboard .dash-pane .section-head h3 { font-size: 1.13rem; }
+  #dashboard .dash-pane .section-head p { font-size: .83rem; }
+  .dash-pane { min-width: 0; animation: dashboardReveal .2s ease-out; }
+  .dash-pane:focus { outline: none; }
+  .dash-toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin: 23px 0 20px; padding: 15px; background: #f7f9f8; border: 1px solid #eaf0ec; border-radius: 12px; }
+  .dash-toolbar .field { flex: 1 1 140px; min-width: 0; }
+  .dash-toolbar .field:first-child { flex: 2 1 230px; }
+  #dashboard .dash-toolbar label { font-size: .75rem; color: #5c7668; }
+  #dashboard .dash-toolbar input, #dashboard .dash-toolbar select { background: white; font-size: .84rem; min-height: 43px; border-radius: 9px; padding: 10px 12px; }
+  .dash-cell-note { display: block; color: #7d9287; font-size: .74rem; margin-top: 4px; }
+  #dashboard .table-wrap { max-width: 100%; border-radius: 12px; border-color: #e3ebe6; }
+  #dashboard .table-wrap table { font-size: .82rem; }
+  #dashboard .table-wrap th { background: #f1f6f3; color: #5f786a; font-weight: 600; padding: 13px 14px; font-size: .76rem; white-space: nowrap; }
+  #dashboard .table-wrap td { padding: 17px 14px; border-color: #edf1ee; min-width: 80px; }
+  #dashboard .table-wrap td:first-child { min-width: 135px; }
+  #dashboard .table-wrap tr:hover td { background: #f6fbf8; }
+  #dashboard .table-wrap td:last-child { position: sticky; right: 0; background: white; border-left: 1px solid #edf1ee; }
+  #dashboard .table-wrap th:last-child { position: sticky; right: 0; z-index: 1; }
+  #dashboard .badge { font-size: .72rem; font-weight: 500; border-radius: 6px; }
+  .dash-empty { padding: 38px 20px 42px; text-align: center; color: #688172; }
+  .dash-empty-symbol { display: inline-grid; place-items: center; width: 102px; height: 102px; border-radius: 50%; background: #eff7f2; margin-bottom: 22px; }
+  .dash-empty-symbol svg { width: 85px; height: 82px; }
+  .dash-empty h4 { color: #244a38; font-size: 1.12rem; font-weight: 600; margin: 0 0 10px; }
+  .dash-empty p { max-width: 390px; margin: 0 auto 23px; font-size: .85rem; line-height: 1.9; }
+  #dashboard .dashboard-insight-head { align-items: flex-start; }
+  #dashboard .dashboard-insight-head h3 { font-size: .98rem; }
+  #dashboard .dashboard-insight-head span { white-space: nowrap; font-size: .7rem; }
+  #dashboard .dashboard-insight-grid { gap: 18px; }
+  #dashboard #clinicalDashboard { margin-top: 20px; }
+  .dash-overview-callout { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; border-left: 3px solid #d6a758; padding-left: 20px; }
+  .dash-overview-callout h3 { font-size: 1.02rem; margin: 9px 0; }
+  .dash-overview-callout p { color: #798c80; font-size: .82rem; margin-bottom: 0; }
+  .dash-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; color: #7c9083; font-size: .75rem; }
   .dash-pagination button:disabled { opacity: .4; cursor: default; }
-  .dash-overview-callout { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-  .dash-overview-callout p { color: var(--mt); margin-bottom: 0; }
-  .dash-dialog { width: min(560px, calc(100% - 28px)); max-height: calc(100dvh - 40px); box-sizing: border-box; border: 1px solid var(--line); border-radius: 22px; padding: 30px; color: var(--ink); box-shadow: 0 24px 100px #082f3760; }
-  .dash-dialog.wide { width: min(940px, calc(100% - 28px)); }
-  .dash-dialog::backdrop { background: #123b3a99; backdrop-filter: blur(4px); }
-  .dash-dialog h3 { padding-right: 34px; font-size: 1.15rem; }
-  .dash-close { position: absolute; top: 14px; right: 14px; border: 0; border-radius: 50%; background: #eef4f3; color: #456764; width: 34px; height: 34px; font-size: 1.6rem; cursor: pointer; }
-  .dash-filename { max-width: 220px; overflow-wrap: anywhere; white-space: normal; }
+  .dash-dialog { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(510px, 92vw); height: 100dvh; max-width: 100%; max-height: 100dvh; box-sizing: border-box; border: 0; border-left: 1px solid #dfe8e2; border-radius: 22px 0 0 22px; padding: 34px 28px 40px; color: var(--ink); background: #fff; box-shadow: -16px 0 60px #153c321c; overscroll-behavior: contain; }
+  .dash-dialog.wide { width: min(820px, 85vw); }
+  .dash-dialog[open] { animation: dashboardSlide .24s ease-out; }
+  .dash-dialog::backdrop { background: #15383135; backdrop-filter: blur(1px); }
+  #dashboard .dash-dialog h3 { padding: 2px 40px 23px 0; margin-bottom: 24px; border-bottom: 1px solid #e6eee8; font-size: 1.15rem; }
+  #dashboard .dash-dialog input, #dashboard .dash-dialog select, #dashboard .dash-dialog textarea { border-radius: 10px; font-size: .9rem; }
+  #dashboard .dash-dialog input[readonly] { background: #f4f7f5; color: #7c8f83; font-size: .79rem; }
+  #dashboard .dash-dialog > .btn.primary { width: 100%; margin-top: 28px; }
+  #dashboard .dash-dialog .screening-record { border-radius: 12px; }
+  #dashboard .dash-dialog .child-dashboard-list h3 { padding-right: 0; border-bottom: 0; margin-bottom: 0; }
+  #dashboard .dash-dialog .child-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-close { position: sticky; top: 0; float: right; z-index: 5; border: 1px solid #e3ebe5; border-radius: 10px; background: #f5f8f6; color: #658274; width: 34px; height: 34px; font-size: 1.4rem; cursor: pointer; }
+  body:has(.dash-dialog[open]) { overflow: hidden; }
+  .dash-filename { max-width: 190px; overflow-wrap: anywhere; white-space: normal; }
   .dash-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .dash-scroll-hint { display: none; }
-  @media(max-width: 640px) { .dash-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); } .dash-tabs button { min-width: 0; gap: 5px; font-size: .78rem; padding: 11px 5px !important; } .dash-tabs button span { padding: 1px 5px; } .dash-scroll-hint { display: block; color: var(--mt); font-size: .75rem; margin: 0 0 10px; } }
-  @media(max-width: 640px) { .dashboard-hero { align-items: flex-start; } .dashboard-hero h2 { font-size: 1.3rem; } .dash-tabs { margin: 18px 0; } .dash-tabs button { padding: 11px 14px; } .dash-dialog { padding: 24px 18px; } .dash-toolbar { padding: 12px; } #metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } #metrics .dashboard-kpi { padding: 16px 12px; } .dash-pagination { justify-content: center; } }
-
+  @keyframes dashboardSlide { from { opacity: .5; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+  @keyframes dashboardReveal { from { opacity: .5; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @media(max-width: 1250px) { .dashboard-shell { grid-template-columns: 196px minmax(0, 1fr); gap: 22px; } #dashboard .dashboard-kpi { padding: 17px 14px; } #dashboard .dashboard-insight-grid { grid-template-columns: 1fr; } }
+  @media(max-width: 1099px) {
+    .dashboard-shell { display: flex; flex-direction: column; gap: 22px; }
+    .dashboard-sidebar { position: static; padding: 7px; width: 100%; border-radius: 14px; order: 0; }
+    .dashboard-main { width: 100%; }
+    .dash-sidebar-brand, .dash-sidebar-caption, .dash-sidebar-note { display: none; }
+    .dash-tabs { flex-direction: row; gap: 5px; }
+    .dash-tabs button { justify-content: center; gap: 7px; padding: 11px 8px; }
+    .dash-tabs button .dash-nav-label { flex: 0 1 auto; }
+    .dash-tabs button[aria-selected="true"]::before { display: none; }
+    #dashboard .dashboard-insight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media(max-width: 640px) {
+    body[data-view="dashboard"] .app-main { padding-top: 18px; }
+    .dashboard-shell { gap: 20px; }
+    .dash-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .dash-tabs button { font-size: .75rem; gap: 5px; padding: 10px 4px; }
+    .dash-tabs button > svg { display: none; }
+    .dash-tabs button [data-dash-count] { min-width: 20px; height: 20px; font-size: .66rem; }
+    #dashboard .dashboard-hero { padding: 0 3px 20px; margin-bottom: 18px; }
+    #dashboard .dashboard-hero h2 { font-size: 1.35rem; }
+    #dashboard .dashboard-hero p { font-size: .82rem; }
+    #dashboard #metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    #dashboard .dashboard-kpi { padding: 16px; gap: 10px; }
+    #dashboard .dashboard-kpi-top { gap: 12px; font-size: .75rem; }
+    #dashboard .dashboard-kpi > strong { font-size: 1.95rem; }
+    #dashboard .dashboard-kpi > small { font-size: .69rem; }
+    #dashboard .dash-pane.panel { padding: 20px 15px; }
+    #dashboard .dashboard-insight-grid { grid-template-columns: 1fr; }
+    .dash-toolbar { padding: 12px; }
+    .dash-pagination { justify-content: center; }
+    #dashboard .table-wrap td { padding: 14px 10px; }
+    #dashboard .table-wrap td:last-child, #dashboard .table-wrap th:last-child { position: static; border-left: 0; }
+    .dash-dialog, .dash-dialog.wide { width: 100%; height: 100dvh; border-radius: 0; padding: 26px 18px 36px; }
+    .dash-close { top: 0; }
+    #dashboard .dash-dialog h3 { font-size: 1.08rem; }
+    #dashboard .dash-pane .table-wrap { overflow: visible; border: 0; border-radius: 0; background: transparent; }
+    #dashboard .dash-pane .table-wrap table, #dashboard .dash-pane .table-wrap tbody { display: block; width: 100%; }
+    #dashboard .dash-pane .table-wrap thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    #dashboard .dash-pane .table-wrap tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid #e1eae4; border-radius: 12px; margin-bottom: 12px; overflow: hidden; background: white; }
+    #dashboard .dash-pane .table-wrap td { display: block; min-width: 0; border: 0; padding: 11px 13px; overflow-wrap: anywhere; }
+    #dashboard .dash-pane .table-wrap td::before { content: attr(data-label); display: block; font-size: .69rem; color: #7a9184; margin-bottom: 6px; }
+    #dashboard .dash-pane .table-wrap td:first-child { grid-column: 1 / -1; min-width: 0; background: #f5f9f6; border-bottom: 1px solid #eaf0eb; }
+    #dashboard .dash-pane .table-wrap td:first-child::before { display: none; }
+    #dashboard .dash-pane .table-wrap td:last-child { grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 10px; border-top: 1px solid #edf2ee; padding-top: 12px; padding-bottom: 12px; }
+    #dashboard .dash-pane .table-wrap td:last-child::before { margin: 0 auto 0 0; }
+    #dashboard .dash-pane .table-wrap td .dash-cell-note { font-size: .71rem; }
+    .dash-empty { padding: 30px 12px; }
+  }
+  @media(prefers-reduced-motion: reduce) { .dash-dialog[open], .dash-pane { animation: none; } #dashboard .dashboard-kpi:hover { transform: none; } .dash-tabs button { transition: none; } }
 
   /* ── Dashboard KPIs ─────────────────────────────────────── */
   .dashboard-kpi {
@@ -1276,16 +1393,24 @@
 
     <!-- ════ DASHBOARD ════ -->
     <section id="dashboard" class="section">
+      <div class="dashboard-shell">
+<aside class="dashboard-sidebar" aria-label="เมนู Dashboard">
+        <div class="dash-sidebar-brand"><span class="dash-brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></span><div><strong>ศูนย์คัดกรอง</strong><small>PEDIATRIC OSA</small></div></div>
+        <div class="dash-sidebar-caption">พื้นที่ทำงาน</div>
+      <div id="dashboardTabs" class="dash-tabs" role="tablist" aria-label="หมวดข้อมูลคัดกรอง" onkeydown="dashboardTabKey(event)">
+        <button id="dash-tab-overview" type="button" role="tab" aria-selected="true" aria-controls="dash-overview" data-dash-tab="overview" onclick="selectDashboardTab('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span class="dash-nav-label">ภาพรวม</span></button>
+        <button id="dash-tab-children" type="button" role="tab" aria-selected="false" aria-controls="dash-children" tabindex="-1" data-dash-tab="children" onclick="selectDashboardTab('children')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3M8 15l4 3 4-3"/></svg><span class="dash-nav-label">ข้อมูลเด็ก</span><span data-dash-count="children">0</span></button>
+        <button id="dash-tab-screenings" type="button" role="tab" aria-selected="false" aria-controls="dash-screenings" tabindex="-1" data-dash-tab="screenings" onclick="selectDashboardTab('screenings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m8 13 2 2 5-5M9 18h6"/></svg><span class="dash-nav-label">ผลคัดกรอง</span><span data-dash-count="screenings">0</span></button>
+        <button id="dash-tab-videos" type="button" role="tab" aria-selected="false" aria-controls="dash-videos" tabindex="-1" data-dash-tab="videos" hidden onclick="selectDashboardTab('videos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="13" height="14" rx="3"/><path d="m16 10 5-3v10l-5-3"/></svg><span class="dash-nav-label">วิดีโอ</span><span data-dash-count="videos">0</span></button>
+        <button id="dash-tab-users" type="button" role="tab" aria-selected="false" aria-controls="dash-users" tabindex="-1" data-dash-tab="users" hidden onclick="selectDashboardTab('users')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 4v2"/></svg><span class="dash-nav-label">ผู้ใช้</span><span data-dash-count="users">0</span></button>
+      </div>
+
+        <div class="dash-sidebar-note"><svg viewBox="0 0 180 88" fill="none" aria-hidden="true"><path d="M95 12a28 28 0 1 0 30 39A27 27 0 0 1 95 12Z" fill="#a2e6d3"/><path d="m139 15 2 6 6 2-6 2-2 6-2-6-6-2 6-2ZM48 22l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" fill="#e3fff4"/><path d="M28 73h123M43 81h100" stroke="white" stroke-opacity=".2" stroke-linecap="round"/></svg><strong>ดูแลทุกการนอนหลับ</strong><p>ระบบคัดกรองเด็กนอนกรน<br>โรงพยาบาลธัญบุรี</p></div>
+      </aside>
+      <div class="dashboard-main">
       <div class="section-head dashboard-hero">
         <div><span class="eyebrow">โรงพยาบาลธัญบุรี · Pediatric OSA Screening</span><h2>ผลคัดกรองเด็กนอนกรน</h2><p>ติดตามผลประเมินและจัดการการดูแลเด็กในที่เดียว</p><small id="dashboardUpdated" class="dash-updated" aria-live="polite">กำลังโหลดข้อมูล…</small></div>
         <div class="dash-actions"><button type="button" class="btn primary" onclick="showTab('child')"><i class="fa-solid fa-plus" aria-hidden="true"></i> ลงทะเบียนเด็ก</button><button id="dashboardRefresh" type="button" class="btn secondary" onclick="loadDashboard(true)"><i class="fa-solid fa-rotate" aria-hidden="true"></i> รีเฟรช</button></div>
-      </div>
-      <div id="dashboardTabs" class="dash-tabs" role="tablist" aria-label="หมวดข้อมูลคัดกรอง" onkeydown="dashboardTabKey(event)">
-        <button id="dash-tab-overview" type="button" role="tab" aria-selected="true" aria-controls="dash-overview" data-dash-tab="overview" onclick="selectDashboardTab('overview')">ภาพรวม</button>
-        <button id="dash-tab-children" type="button" role="tab" aria-selected="false" aria-controls="dash-children" tabindex="-1" data-dash-tab="children" onclick="selectDashboardTab('children')">ข้อมูลเด็ก <span data-dash-count="children">0</span></button>
-        <button id="dash-tab-screenings" type="button" role="tab" aria-selected="false" aria-controls="dash-screenings" tabindex="-1" data-dash-tab="screenings" onclick="selectDashboardTab('screenings')">ผลคัดกรอง <span data-dash-count="screenings">0</span></button>
-        <button id="dash-tab-videos" type="button" role="tab" aria-selected="false" aria-controls="dash-videos" tabindex="-1" data-dash-tab="videos" hidden onclick="selectDashboardTab('videos')">วิดีโอ <span data-dash-count="videos">0</span></button>
-        <button id="dash-tab-users" type="button" role="tab" aria-selected="false" aria-controls="dash-users" tabindex="-1" data-dash-tab="users" hidden onclick="selectDashboardTab('users')">ผู้ใช้ <span data-dash-count="users">0</span></button>
       </div>
       <div id="dash-overview" class="dash-pane" role="tabpanel" aria-labelledby="dash-tab-overview" tabindex="0">
         <div id="metrics" class="metric-grid"></div>
@@ -1304,6 +1429,8 @@
       </div>
       <div id="dash-videos" class="dash-pane panel" role="tabpanel" aria-labelledby="dash-tab-videos" tabindex="0" hidden><div class="section-head"><div><h3>วิดีโอประกอบการประเมิน</h3><p>เปิดดูคลิปและบันทึกผลการทบทวนของเจ้าหน้าที่</p></div></div><div class="dash-toolbar"><div class="field"><label for="dashboardVideoSearch">ค้นหาวิดีโอ</label><input id="dashboardVideoSearch" type="search" placeholder="ชื่อเด็ก หรือชื่อไฟล์" oninput="filterDashboardTables()"></div></div><div id="dashboardVideosTable"></div></div>
       <div id="dash-users" class="dash-pane panel" role="tabpanel" aria-labelledby="dash-tab-users" tabindex="0" hidden><div id="adminPanel"><div class="section-head"><div><h3>ผู้ใช้และสิทธิ์การเข้าถึง</h3><p>เลือกผู้ใช้เพื่อแก้ไขชื่อ บทบาท และสถานะบัญชี</p></div></div><div class="dash-toolbar"><div class="field"><label for="dashboardUserSearch">ค้นหาผู้ใช้</label><input id="dashboardUserSearch" type="search" placeholder="ชื่อ หรือรหัสผู้ใช้" oninput="filterDashboardTables()"></div></div><div id="adminDashboard"></div></div></div>
+      </div>
+      </div>
       <dialog id="screeningEditor" class="dash-dialog" aria-label="ทบทวนผลคัดกรอง"><button type="button" class="dash-close" aria-label="ปิดหน้าต่าง" onclick="this.closest('dialog').close()">×</button>
               <h3>จัดการเคสคัดกรอง</h3>
               <div class="field mt">
@@ -2215,14 +2342,20 @@
       }).join('')}</div>`;
     }
 
+    function dashboardIcon(name) {
+      const icons = {"overview":"<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"2\"/>","children":"<circle cx=\"12\" cy=\"7\" r=\"3\"/><path d=\"M5 21v-3a7 7 0 0 1 14 0v3M8 15l4 3 4-3\"/>","screenings":"<rect x=\"5\" y=\"4\" width=\"14\" height=\"17\" rx=\"2\"/><rect x=\"9\" y=\"2\" width=\"6\" height=\"4\" rx=\"1\"/><path d=\"m8 13 2 2 5-5M9 18h6\"/>","videos":"<rect x=\"3\" y=\"5\" width=\"13\" height=\"14\" rx=\"3\"/><path d=\"m16 10 5-3v10l-5-3\"/>","users":"<circle cx=\"9\" cy=\"8\" r=\"3\"/><path d=\"M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 4v2\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/>","alert":"<path d=\"m10.3 4-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3l-8-14a2 2 0 0 0-3.4 0Z\"/><path d=\"M12 9v4M12 17h.01\"/>"};
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (icons[name] || icons.overview) + '</svg>';
+    }
+
     function dashboardEmpty(title, description, action) {
-      return `<div class="dash-empty"><span class="dash-empty-symbol" aria-hidden="true">◇</span><h4>${safe(title)}</h4><p>${safe(description)}</p>${action || ''}</div>`;
+      return `<div class="dash-empty"><span class="dash-empty-symbol" aria-hidden="true"><svg viewBox="0 0 100 90" fill="none"><rect x="22" y="16" width="56" height="65" rx="12" fill="white" stroke="#8dc5b7" stroke-width="2"/><rect x="38" y="9" width="24" height="14" rx="5" fill="#d5eee5" stroke="#8dc5b7" stroke-width="2"/><path d="M35 45h30M35 57h20M35 69h13" stroke="#99bfb4" stroke-width="3" stroke-linecap="round"/><circle cx="74" cy="65" r="16" fill="#007d77"/><path d="M74 58v14M67 65h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg></span><h4>${safe(title)}</h4><p>${safe(description)}</p>${action || ''}</div>`;
     }
 
     function selectDashboardTab(name, focus) {
       const allowed = ['overview', 'children', 'screenings', ...(isAdmin() ? ['videos', 'users'] : [])];
       if (!allowed.includes(name)) name = 'overview';
       state.dashboardTab = name;
+      document.getElementById('dashboardTabs').setAttribute('aria-orientation', matchMedia('(min-width: 1100px)').matches ? 'vertical' : 'horizontal');
       document.querySelectorAll('[data-dash-tab]').forEach(button => {
         const selected = button.dataset.dashTab === name;
         button.hidden = !allowed.includes(button.dataset.dashTab);
@@ -2234,12 +2367,12 @@
     }
 
     function dashboardTabKey(event) {
-      if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+      if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
       const buttons = [...document.querySelectorAll('[data-dash-tab]')].filter(button => !button.hidden);
       const index = buttons.indexOf(event.target);
       if (index < 0) return;
       event.preventDefault();
-      const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : -1) + buttons.length) % buttons.length;
       selectDashboardTab(buttons[next].dataset.dashTab, true);
     }
 
@@ -2264,13 +2397,18 @@
       selectDashboardTab('screenings', true);
     }
 
+    function dashboardTableRow(row, headings, renderRow) {
+      let column = 0;
+      return renderRow(row).replace(/<td>/g, () => '<td data-label="' + safeAttr(headings[column++]) + '">');
+    }
+
     function dashboardTable(key, rows, headings, renderRow, total, emptyTitle, emptyDescription) {
       if (!rows.length) return dashboardEmpty(total ? 'ไม่พบรายการที่ตรงกับการค้นหา' : emptyTitle, total ? 'ลองเปลี่ยนคำค้นหาหรือตัวกรองเพื่อแสดงรายการอื่น' : emptyDescription);
       const size = 10;
       const pages = Math.ceil(rows.length / size);
       const page = Math.max(0, Math.min(state.dashboardPages[key] || 0, pages - 1));
       state.dashboardPages[key] = page;
-      return `<div class="table-wrap"><table><caption class="dash-sr-only">${safe(emptyTitle.replace('ยังไม่มี', 'รายการ'))}</caption><thead><tr>${headings.map(title => `<th scope="col">${safe(title)}</th>`).join('')}</tr></thead><tbody>${rows.slice(page * size, (page + 1) * size).map(renderRow).join('')}</tbody></table></div><div class="dash-pagination"><span>แสดง ${page * size + 1}–${Math.min((page + 1) * size, rows.length)} จาก ${rows.length} รายการ${total !== rows.length ? ` (ทั้งหมด ${total})` : ''}</span><div><button type="button" class="btn ghost small" aria-label="หน้าก่อนหน้า" ${page === 0 ? 'disabled' : ''} onclick="dashboardPage('${key}',-1)">ก่อนหน้า</button><span> ${page + 1} / ${pages} </span><button type="button" class="btn ghost small" aria-label="หน้าถัดไป" ${page === pages - 1 ? 'disabled' : ''} onclick="dashboardPage('${key}',1)">ถัดไป</button></div></div>`;
+      return `<div class="table-wrap"><table><caption class="dash-sr-only">${safe(emptyTitle.replace('ยังไม่มี', 'รายการ'))}</caption><thead><tr>${headings.map(title => `<th scope="col">${safe(title)}</th>`).join('')}</tr></thead><tbody>${rows.slice(page * size, (page + 1) * size).map(row => dashboardTableRow(row, headings, renderRow)).join('')}</tbody></table></div><div class="dash-pagination"><span>แสดง ${page * size + 1}–${Math.min((page + 1) * size, rows.length)} จาก ${rows.length} รายการ${total !== rows.length ? ` (ทั้งหมด ${total})` : ''}</span><div><button type="button" class="btn ghost small" aria-label="หน้าก่อนหน้า" ${page === 0 ? 'disabled' : ''} onclick="dashboardPage('${key}',-1)">ก่อนหน้า</button><span> ${page + 1} / ${pages} </span><button type="button" class="btn ghost small" aria-label="หน้าถัดไป" ${page === pages - 1 ? 'disabled' : ''} onclick="dashboardPage('${key}',1)">ถัดไป</button></div></div>`;
     }
 
     function dashboardRole(role) {
@@ -2342,7 +2480,7 @@
       ];
       return values.map(item => `
         <article class="dashboard-kpi ${item.tone}">
-          <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon" aria-hidden="true">${safe(item.icon)}</span><span>${safe(item.label)}</span></div>
+          <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon" aria-hidden="true">${dashboardIcon(({blue:'children',teal:'screenings',gold:'clock',red:'alert'})[item.tone])}</span><span>${safe(item.label)}</span></div>
           <strong>${safe(item.value)}</strong>
           <small>${safe(item.caption)}</small>
         </article>
