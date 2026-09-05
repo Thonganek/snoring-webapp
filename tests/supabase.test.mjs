@@ -22,7 +22,11 @@ async function fixture() {
     const values = [];
     const bind = value => { values.push(typeof value === 'object' && value !== null ? JSON.stringify(value) : value); return '$' + values.length; };
     const filters = [...params].filter(([, value]) => value.startsWith('eq.'));
-    const where = () => filters.length ? ' WHERE ' + filters.map(([key, value]) => { assert(/^[a-z_]+$/.test(key)); return key + '=' + bind(value.slice(3)); }).join(' AND ') : '';
+    const where = () => {
+      const conditions = filters.map(([key, value]) => { assert(/^[a-z_]+$/.test(key)); return key + '=' + bind(value.slice(3)); });
+      if (params.get('deleted_at') === 'is.null') conditions.push('deleted_at IS NULL');
+      return conditions.length ? ' WHERE ' + conditions.join(' AND ') : '';
+    };
     if (options.method === 'POST') {
       const body = JSON.parse(options.body);
       const columns = Object.keys(body);
@@ -63,6 +67,64 @@ async function fixture() {
   return { db, app, config, objects, requests, handler: createHandler({ app, env }) };
 }
 const child = { childCidNumber: '1234567890123', birthDate: '2020-01-02', childName: 'เด็กทดสอบ', nickname: 'ทดสอบ', weightKg: 20, heightCm: 110 };
+
+test('child editing preserves identity/history; trash atomically hides linked records and restores them', async () => {
+  const { app, db } = await fixture();
+  try {
+    const parent=await app.registerChildPublic(child);
+    const admin=await app.loginAdmin('staff','test-password');
+    const id=parent.child.childId;
+    await db.query("UPDATE children SET consent_version='demo-data', comorbidities_json='{\"asthma\":true}' WHERE child_id=$1",[id]);
+    const edit=await app.getChildForEdit(admin.token,id);
+    assert.equal(edit.childCidNumber,'✓');
+    await app.saveChildProfile(admin.token,{childId:id,childName:'Edited child',weightKg:25});
+    const stored=(await db.query('SELECT * FROM children WHERE child_id=$1',[id])).rows[0];
+    assert.equal(stored.child_cid_number,child.childCidNumber);
+    assert.equal(stored.parent_id,parent.user.userId);
+    assert.equal(stored.consent_version,'demo-data');
+    assert.equal(Number(stored.height_cm),110);
+    assert.equal(Number(stored.bmi),20.7);
+    assert.deepEqual(stored.comorbidities_json,{asthma:true});
+    for(const payload of [{weightKg:-1},{heightCm:0},{birthDate:'2026-02-30'},{childCidNumber:'bad'}]) await assert.rejects(app.saveChildProfile(admin.token,{childId:id,...payload}));
+    const schema=(await app.apiBootstrap()).schema;
+    const assessment=await app.submitScreening(parent.token,{childId:id,osa18Answers:Object.fromEntries(schema.osa18Items.map(item=>[item.key,2]))});
+    const sid=assessment.screening.screeningId;
+    await db.query("INSERT INTO screenings (screening_id,child_id,submitted_at,osa18_total,risk_level,clinical_status) SELECT 'history-'||n,$1,now(),36,'low','new' FROM generate_series(1,160) n",[id]);
+    const video=await app.prepareVideoUpload(parent.token,{screeningId:sid,fileName:'test.mp4',mimeType:'video/mp4',sizeBytes:100});
+    await assert.rejects(app.setChildTrash(parent.token,id,true,id));
+    await assert.rejects(app.listChildTrash(parent.token));
+    await assert.rejects(app.getChildForEdit(parent.token,id));
+    await assert.rejects(app.setChildTrash(admin.token,id,true,'wrong'));
+    await app.setChildTrash(admin.token,id,true,id);
+    const hidden=await app.listAdminDashboard(admin.token,true);
+    assert.equal(hidden.metrics.totalChildren,0);
+    assert.equal(hidden.metrics.totalScreenings,0);
+    assert.equal(hidden.metrics.totalVideos,0);
+    assert.equal((await app.getReportData(admin.token,{})).screenings.length,0);
+    assert.equal((await app.listParentDashboard(parent.token,true)).children.length,0);
+    await assert.rejects(app.loginWithCid(child.childCidNumber,child.birthDate));
+    await assert.rejects(app.getVideoUrl(parent.token,video.videoId));
+    await assert.rejects(app.saveChildProfile(admin.token,{childId:id,notes:'No'}));
+    await assert.rejects(app.submitScreening(parent.token,{childId:id,osa18Answers:Object.fromEntries(schema.osa18Items.map(item=>[item.key,2]))}));
+    await assert.rejects(db.query("INSERT INTO screenings (screening_id,child_id) VALUES ('late',$1)",[id]));
+    assert.equal((await app.listChildTrash(admin.token)).length,1);
+    assert.equal((await db.query('SELECT count(*)::int AS n FROM screenings WHERE deleted_at IS NOT NULL')).rows[0].n,161);
+    await app.setChildTrash(admin.token,id,false,id);
+    const restored=await app.listAdminDashboard(admin.token,true);
+    assert.equal(restored.metrics.totalScreenings,161);
+    assert.equal(restored.metrics.totalVideos,1);
+    assert.equal((await app.listChildTrash(admin.token)).length,0);
+    assert.equal((await app.getReportData(admin.token,{})).screenings.length,161);
+    assert.equal((await app.loginWithCid(child.childCidNumber,child.birthDate)).user.userId,parent.user.userId);
+    const other=await app.registerChildPublic({...child,childCidNumber:'9876543210123'});
+    await assert.rejects(app.saveChildProfile(other.token,{childId:id,notes:'No'}));
+    await app.updateUserByAdmin(admin.token,{userId:other.user.userId,role:'nurse'});
+    await app.saveChildProfile(other.token,{childId:id,notes:'Clinical edit'});
+    await assert.rejects(app.setChildTrash(other.token,id,true,id));
+    const log=(await db.query("SELECT action FROM audit_logs WHERE action IN ('trashChild','restoreChild')")).rows;
+    assert.equal(log.length,2);
+  } finally {await db.close();}
+});
 
 test('report: full pagination, Thai date boundaries, scopes and clinical/admin permissions', async () => {
   const { app, db } = await fixture();

@@ -64,6 +64,7 @@
   /* Role-gated fields: parents never see clinical/staff inputs */
   body[data-role="parent"] .staff-only,
   body[data-role="parent"] .clinical-field { display: none !important; }
+  body:not([data-role="admin"]) .admin-only { display: none !important; }
 
   /* ── Navbar ─────────────────────────────────────────────── */
   .navbar-custom {
@@ -1423,7 +1424,7 @@
       </div>
       <div id="dash-children" class="dash-pane panel" role="tabpanel" aria-labelledby="dash-tab-children" tabindex="0" hidden>
         <div class="section-head"><div><h3>ข้อมูลเด็ก</h3><p>ค้นหาเด็กและเปิดดูข้อมูลสุขภาพพร้อมประวัติการประเมิน</p></div></div>
-        <div class="dash-toolbar"><div class="field"><label for="dashboardChildSearch">ค้นหาเด็ก</label><input id="dashboardChildSearch" type="search" placeholder="ชื่อ ชื่อเล่น หรือรหัสเด็ก" oninput="filterDashboardTables()"></div></div><div id="dashboardChildrenTable"></div>
+        <div class="dash-toolbar"><div class="field"><label for="dashboardChildSearch">ค้นหาเด็ก</label><input id="dashboardChildSearch" type="search" placeholder="ชื่อ ชื่อเล่น หรือรหัสเด็ก" oninput="filterDashboardTables()"></div></div><div class="action-row mt"><button type="button" class="btn primary" onclick="openChildEditor()">＋ เพิ่มข้อมูลเด็ก</button><button type="button" class="btn secondary admin-only" onclick="openChildTrash()">ถังขยะ / กู้คืน</button></div><div id="dashboardChildrenTable" class="mt"></div>
       </div>
       <div id="dash-screenings" class="dash-pane panel" role="tabpanel" aria-labelledby="dash-tab-screenings" tabindex="0" hidden>
         <div class="section-head"><div><h3>ผลคัดกรอง</h3><p>เลือกผลประเมินเพื่อดูคำตอบครบทุกข้อและบันทึกการทบทวน</p></div></div>
@@ -1433,6 +1434,9 @@
       <div id="dash-users" class="dash-pane panel" role="tabpanel" aria-labelledby="dash-tab-users" tabindex="0" hidden><div id="adminPanel"><div class="section-head"><div><h3>ผู้ใช้และสิทธิ์การเข้าถึง</h3><p>เลือกผู้ใช้เพื่อแก้ไขชื่อ บทบาท และสถานะบัญชี</p></div></div><div class="dash-toolbar"><div class="field"><label for="dashboardUserSearch">ค้นหาผู้ใช้</label><input id="dashboardUserSearch" type="search" placeholder="ชื่อ หรือรหัสผู้ใช้" oninput="filterDashboardTables()"></div></div><div id="adminDashboard"></div></div></div>
       </div>
       </div>
+      <dialog id="childProfileEditor" class="dash-dialog" aria-labelledby="childProfileTitle"><button type="button" class="dash-close" aria-label="ปิดหน้าต่าง" onclick="this.closest('dialog').close()">×</button><h3 id="childProfileTitle">ข้อมูลเด็ก</h3><form id="childProfileForm" class="mt" onsubmit="saveManagedChild(event)"><div id="childProfileFields"></div><p id="childProfileStatus" class="hint mt" role="status"></p><div class="action-row mt"><button id="childProfileSave" type="submit" class="btn primary">บันทึกข้อมูล</button><button type="button" class="btn secondary" onclick="document.getElementById('childProfileEditor').close()">ยกเลิก</button></div></form></dialog>
+      <dialog id="childTrashDialog" class="dash-dialog" aria-labelledby="childTrashTitle"><button type="button" class="dash-close" aria-label="ปิดหน้าต่าง" onclick="this.closest('dialog').close()">×</button><h3 id="childTrashTitle">ถังขยะข้อมูลเด็ก</h3><p class="hint mt">ข้อมูลเด็ก ผลคัดกรอง และวิดีโอในถังขยะจะไม่รวมใน Dashboard หรือรายงาน Excel การกู้คืนจะนำประวัติทั้งหมดกลับมา</p><div id="childTrashList" class="mt"></div><p id="childTrashStatus" role="status" class="hint mt"></p></dialog>
+      <dialog id="childDeleteDialog" class="dash-dialog" aria-labelledby="childDeleteTitle"><button type="button" class="dash-close" aria-label="ปิดหน้าต่าง" onclick="this.closest('dialog').close()">×</button><h3 id="childDeleteTitle">ย้ายข้อมูลเด็กไปถังขยะ</h3><p id="childDeleteName" class="mt"></p><div class="notice mt">ข้อมูลเด็กและประวัติผลคัดกรอง/วิดีโอทั้งหมดจะถูกซ่อนจากการใช้งานและรายงาน ผู้ดูแลระบบสามารถกู้คืนได้จากถังขยะ</div><p id="childDeleteStatus" class="hint mt" role="status"></p><div class="action-row mt"><button id="childDeleteConfirm" type="button" class="btn primary" onclick="confirmChildDelete()">ยืนยันย้ายไปถังขยะ</button><button type="button" class="btn secondary" onclick="document.getElementById('childDeleteDialog').close()">ยกเลิก</button></div></dialog>
       <dialog id="reportDialog" class="dash-dialog" aria-labelledby="reportTitle">
         <button type="button" class="dash-close" aria-label="ปิดรายงาน" onclick="this.closest('dialog').close()">×</button>
         <h3 id="reportTitle">ส่งออกรายงาน Excel</h3>
@@ -2490,7 +2494,7 @@
       const childLabel = child => `<strong>${safe(child.childName || child.nickname || '-')}</strong><small class="dash-cell-note">${safe(child.childCode || child.childId || '-')}</small>`;
       document.querySelectorAll('[data-dash-count]').forEach(badge => { badge.textContent = ({ children, screenings, users, videos })[badge.dataset.dashCount].length; });
       const childRows = children.filter(child => matches(query('dashboardChildSearch'), child.childName, child.nickname, child.childCode, child.childId));
-      document.getElementById('dashboardChildrenTable').innerHTML = dashboardTable('children', childRows, ['เด็ก / รหัส', 'เพศ', 'อายุ', 'น้ำหนัก / ส่วนสูง', 'BMI', 'รายละเอียด'], child => `<tr><td>${childLabel(child)}</td><td>${safe(sexText(child.sex))}</td><td>${safe(dashboardValue(child.ageYears, ' ปี'))}</td><td>${safe(dashboardValue(child.weightKg, ' กก.'))}<small class="dash-cell-note">${safe(dashboardValue(child.heightCm, ' ซม.'))}</small></td><td>${safe(dashboardValue(child.bmi))}</td><td><button type="button" class="btn small secondary" onclick="openDashboardChild('${jsArg(child.childId)}')">ดูข้อมูล</button></td></tr>`, children.length, 'ยังไม่มีข้อมูลเด็ก', 'กดลงทะเบียนเด็กที่ด้านบนเพื่อเริ่มบันทึกข้อมูล');
+      document.getElementById('dashboardChildrenTable').innerHTML = dashboardTable('children', childRows, ['เด็ก / รหัส', 'เพศ', 'อายุ', 'น้ำหนัก / ส่วนสูง', 'BMI', 'รายละเอียด'], child => `<tr><td>${childLabel(child)}</td><td>${safe(sexText(child.sex))}</td><td>${safe(dashboardValue(child.ageYears, ' ปี'))}</td><td>${safe(dashboardValue(child.weightKg, ' กก.'))}<small class="dash-cell-note">${safe(dashboardValue(child.heightCm, ' ซม.'))}</small></td><td>${safe(dashboardValue(child.bmi))}</td><td><button type="button" class="btn small secondary" onclick="openDashboardChild('${jsArg(child.childId)}')">ดูข้อมูล</button> <button type="button" class="btn small secondary" onclick="openChildEditor('${jsArg(child.childId)}')">แก้ไข</button> ${isAdmin() ? `<button type="button" class="btn small ghost" onclick="askChildDelete('${jsArg(child.childId)}')">ลบ</button>` : ''}</td></tr>`, children.length, 'ยังไม่มีข้อมูลเด็ก', 'กดลงทะเบียนเด็กที่ด้านบนเพื่อเริ่มบันทึกข้อมูล');
       const risk = query('dashboardRiskFilter'), status = query('dashboardStatusFilter');
       const screeningRows = screenings.filter(row => { const child = byId[row.childId] || {}; return matches(query('dashboardScreeningSearch'), child.childName, child.nickname, child.childCode, row.childId, row.screeningId) && (!risk || row.riskLevel === risk) && (!status || (row.clinicalStatus || 'new') === status); });
       document.getElementById('dashboardScreeningsTable').innerHTML = dashboardTable('screenings', screeningRows, ['เด็ก / รหัส', 'วันที่ประเมิน', 'OSA-18', 'ความเสี่ยง', 'สถานะ', 'จัดการ'], row => `<tr><td>${childLabel(byId[row.childId] || { childId: row.childId })}</td><td>${safe(formatDate(row.submittedAt))}</td><td><strong>${safe(dashboardValue(row.osa18Total))}</strong><small class="dash-cell-note">จาก 126 คะแนน</small></td><td><span class="badge ${riskClass(row.riskLevel)}">${safe(riskText(row.riskLevel))}</span></td><td>${safe(clinicalStatusText(row.clinicalStatus || 'new'))}</td><td><div class="dash-row-actions"><button type="button" class="btn small secondary" onclick="openDashboardScreening('${jsArg(row.screeningId)}')">ดูผล</button>${hasClinicalAccess() ? `<button type="button" class="btn small ghost" onclick="fillScreeningReview('${jsArg(row.screeningId)}')">ทบทวน</button>` : ''}</div></td></tr>`, screenings.length, 'ยังไม่มีผลคัดกรอง', 'ผลจะปรากฏหลังจากลงทะเบียนเด็กและทำแบบคัดกรองเรียบร้อยแล้ว');
@@ -2508,6 +2512,104 @@
         hint.textContent = 'เลื่อนตารางซ้าย–ขวาเพื่อดูข้อมูลและปุ่มจัดการ';
         table.before(hint);
       });
+    }
+
+    let managedChild = null;
+    let childDeleteId = '';
+    let childTrashRows = [];
+    const childEditFields = [
+      ['childCode','รหัสผู้ป่วย / HN','text'],['childName','ชื่อ-สกุลเด็ก','text'],['nickname','ชื่อเล่น','text'],
+      ['sex','เพศ',[['','ไม่ระบุ'],['male','ชาย'],['female','หญิง'],['other','อื่น ๆ']]],
+      ['birthDate','วันเกิด (ค.ศ.)','date'],['ageYears','อายุ (ปี)','number'],['weightKg','น้ำหนัก (กก.)','number'],['heightCm','ส่วนสูง (ซม.)','number'],
+      ['tonsilSize','ขนาดทอนซิล',[['','ไม่ทราบ / ยังไม่ประเมิน'],['1+','1+'],['2+','2+'],['3+','3+'],['4+','4+']]],
+      ['adenoidXrayResult','ผล X-ray adenoid',[['','ไม่ทราบ / ยังไม่ตรวจ'],['normal','ปกติ'],['enlarged','โต / สงสัยโต'],['not-done','ยังไม่ได้ตรวจ']]]
+    ];
+    async function openChildEditor(encodedId) {
+      if (!hasClinicalAccess()) return;
+      const dialog = document.getElementById('childProfileEditor');
+      const status = document.getElementById('childProfileStatus');
+      const button = document.getElementById('childProfileSave');
+      managedChild = null; button.disabled = true;
+      document.getElementById('childProfileFields').innerHTML = '';
+      document.getElementById('childProfileTitle').textContent = encodedId ? 'แก้ไขข้อมูลเด็ก' : 'เพิ่มข้อมูลเด็ก';
+      status.textContent = 'กำลังเตรียมข้อมูล…'; dialog.showModal();
+      try {
+        const child = encodedId ? await callServer('getChildForEdit',[state.token,decodeURIComponent(encodedId)]) : {};
+        if (!dialog.open) return;
+        managedChild = child;
+        const fields = childEditFields.map(([key,label,type]) => {
+          const value = child[key] ?? '';
+          let input;
+          if (Array.isArray(type)) {
+            const options = type.some(([id])=>id===value) ? type : [...type,[value,value]];
+            input = `<select id="edit_${key}">${options.map(([id,text])=>`<option value="${safe(id)}" ${id===value?'selected':''}>${safe(text)}</option>`).join('')}</select>`;
+          } else input = `<input id="edit_${key}" type="${type}" value="${safe(value)}" ${type==='number'?'min="0" step="0.1"':''} ${key==='birthDate'?'required max="'+new Date().toISOString().slice(0,10)+'"':''}>`;
+          return `<div class="field"><label for="edit_${key}">${label}${key==='birthDate'?' *':''}</label>${input}</div>`;
+        }).join('');
+        document.getElementById('childProfileFields').innerHTML = `<div class="grid two">${fields}</div>
+          ${!child.childId ? '<div class="field mt"><label for="edit_childCidNumber">เลขบัตรประชาชนเด็ก (ถ้ามี)</label><input id="edit_childCidNumber" inputmode="numeric" pattern="[0-9]{13}" maxlength="13"><span class="hint">กรอก 13 หลักเพื่อให้ผู้ปกครองเข้าสู่ระบบด้วยเลขบัตรและวันเกิดได้</span></div>' : '<p class="hint mt">เลขบัตรและบัญชีผู้ปกครองที่เชื่อมโยงจะคงเดิม</p>'}
+          <div class="field mt"><label for="edit_notes">หมายเหตุ / โรคร่วม / ข้อมูลเพิ่มเติม</label><textarea id="edit_notes">${safe(child.notes||'')}</textarea></div>
+          ${!child.childId ? '<label class="check-line"><input id="edit_consent" type="checkbox" required><span>ผู้ปกครองยินยอมให้บันทึกข้อมูลเพื่อการดูแลและติดตาม</span></label>' : ''}`;
+        status.textContent = child.childId ? 'แก้ไขข้อมูลทะเบียนได้ โดยประวัติและคะแนนคัดกรองเดิมยังคงอยู่' : 'ระบุชื่อหรือชื่อเล่นและวันเกิด น้ำหนัก/ส่วนสูงใช้คำนวณ BMI';
+        button.disabled = false;
+      } catch(error) { status.textContent = error.message; }
+    }
+    async function saveManagedChild(event) {
+      event.preventDefault();
+      const button = document.getElementById('childProfileSave');
+      if (button.disabled || !managedChild) return;
+      const status = document.getElementById('childProfileStatus');
+      const payload = Object.fromEntries(childEditFields.map(([key])=>[key,val('edit_'+key)]));
+      payload.notes = val('edit_notes');
+      if (!payload.childName && !payload.nickname) { status.textContent = 'กรุณาระบุชื่อหรือชื่อเล่นเด็ก'; return; }
+      if (managedChild.childId) payload.childId = managedChild.childId;
+      else {payload.childCidNumber = val('edit_childCidNumber'); payload.consentVersion = 'v1';}
+      button.disabled = true; status.textContent = 'กำลังบันทึก…';
+      try {
+        await callServer('saveChildProfile',[state.token,payload]);
+        document.getElementById('childProfileEditor').close();
+        await loadDashboard(true); selectDashboardTab('children'); toast('บันทึกข้อมูลเด็กเรียบร้อย');
+      } catch(error) {status.textContent = error.message;}
+      finally {button.disabled = false;}
+    }
+    function askChildDelete(encodedId) {
+      if (!isAdmin()) return;
+      const child = state.dashboard?.children.find(row=>row.childId===decodeURIComponent(encodedId));
+      if (!child) return;
+      childDeleteId = child.childId;
+      document.getElementById('childDeleteName').textContent = `${child.childName||child.nickname} · รหัส ${child.childCode||child.childId}`;
+      document.getElementById('childDeleteStatus').textContent = '';
+      document.getElementById('childDeleteDialog').showModal();
+    }
+    async function confirmChildDelete() {
+      const button = document.getElementById('childDeleteConfirm');
+      if (button.disabled || !isAdmin()) return;
+      const id = childDeleteId; button.disabled = true;
+      try {
+        await callServer('setChildTrash',[state.token,id,true,id]);
+        document.getElementById('childDeleteDialog').close();
+        await loadDashboard(true); toast('ย้ายข้อมูลเด็กและประวัติไปถังขยะแล้ว');
+      } catch(error) {document.getElementById('childDeleteStatus').textContent = error.message;}
+      finally {button.disabled = false;}
+    }
+    async function openChildTrash() {
+      if (!isAdmin()) return;
+      const dialog = document.getElementById('childTrashDialog');
+      if (!dialog.open) dialog.showModal();
+      document.getElementById('childTrashStatus').textContent = '';
+      document.getElementById('childTrashList').textContent = 'กำลังโหลด…';
+      try {
+        childTrashRows = await callServer('listChildTrash',[state.token]);
+        document.getElementById('childTrashList').innerHTML = childTrashRows.length ? childTrashRows.map(child=>`<article class="notice mt"><strong>${safe(child.childName||child.nickname)}</strong><p>รหัส ${safe(child.childCode||child.childId)} · ลบเมื่อ ${safe(formatDate(child.deletedAt))}</p><button type="button" class="btn secondary small" onclick="restoreManagedChild('${jsArg(child.childId)}',this)">กู้คืนข้อมูลและประวัติ</button></article>`).join('') : '<div class="notice">ไม่มีข้อมูลในถังขยะ</div>';
+      } catch(error) {document.getElementById('childTrashList').textContent = error.message;}
+    }
+    async function restoreManagedChild(encodedId,button) {
+      if (!isAdmin() || button.disabled) return;
+      button.disabled = true; const id = decodeURIComponent(encodedId);
+      try {
+        await callServer('setChildTrash',[state.token,id,false,id]);
+        await loadDashboard(true); await openChildTrash(); toast('กู้คืนข้อมูลเด็กและประวัติแล้ว');
+      } catch(error) {document.getElementById('childTrashStatus').textContent=error.message;button.disabled=false;}
     }
 
     function openDashboardChild(encodedId) {

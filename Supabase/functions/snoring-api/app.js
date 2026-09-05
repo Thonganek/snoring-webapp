@@ -20,6 +20,7 @@ const TABLE_FIELDS = {
   Videos: ['videoId', 'screeningId', 'childId', 'parentId', 'storagePath', 'fileName', 'mimeType', 'sizeBytes', 'uploadedAt', 'uploadStatus', 'aiStatus', 'aiResultJson', 'aiConfidence', 'reviewStatus', 'reviewerNotes', 'updatedAt'],
   AuditLogs: ['logId', 'actorUserId', 'action', 'targetType', 'targetId', 'createdAt', 'detailJson']
 };
+for (const table of ['Children','Screenings','Videos']) TABLE_FIELDS[table].push('deletedAt');
 const SUPABASE_TABLES = {
   Users: {
     table: 'users',
@@ -66,6 +67,7 @@ const SUPABASE_TABLES = {
     timestampFields: ['createdAt']
   }
 };
+for (const table of ['Children','Screenings','Videos']) SUPABASE_TABLES[table].timestampFields.push('deletedAt');
 const CORE_QUESTIONS = [{
   key: 'shakeToBreathe',
   label: 'ผู้ปกครองต้องเขย่าตัวเด็กขณะหลับเพื่อกระตุ้นให้หายใจ'
@@ -395,16 +397,30 @@ async function saveChildProfile(token, payload) {
   const isStaff = ['nurse', 'ent', 'doctor', 'admin'].indexOf(session.user.role) !== -1;
   const now = new Date();
   const childId = cleanText_(payload.childId) || crypto.randomUUID();
-  const bmi = calculateBmi_(payload.weightKg, payload.heightCm);
-  const cid = cleanText_(payload.childCidNumber || '').replace(/[-\s]/g, '');
+  let cid = cleanText_(payload.childCidNumber || '').replace(/[-\s]/g, '');
   var parentId;
-  const allChildren = await readObjects_(APP_CONFIG.tables.children);
+  const allChildren = await fetchSupabaseRows_(APP_CONFIG.tables.children, { includeDeleted: true });
   const existing = allChildren.find(function (row) {
     if (isStaff) return row.childId === childId;
     return row.childId === childId && row.parentId === session.user.userId;
   });
+  if (existing?.deletedAt) throw new Error('เด็กอยู่ในถังขยะ กรุณากู้คืนก่อนแก้ไข');
+  if (allChildren.some(row => row.childId === childId) && !existing) throw new Error('ไม่มีสิทธิ์แก้ไขข้อมูลเด็กคนนี้');
+  if (existing) {
+    if (!cid) cid = existing.childCidNumber || '';
+    const defaults = { ...existing, birthDate: normDateStr_(existing.birthDate), comorbidities: parseJsonObject_(existing.comorbiditiesJson) };
+    payload = { ...defaults, ...payload };
+  }
+  if (cid && !/^\d{13}$/.test(cid)) throw new Error('เลขบัตรประชาชนต้องมี 13 หลัก');
+  if (!cleanText_(payload.childName) && !cleanText_(payload.nickname)) throw new Error('กรุณาระบุชื่อหรือชื่อเล่นเด็ก');
+  if (payload.birthDate && (!/^\d{4}-\d{2}-\d{2}$/.test(payload.birthDate) || isNaN(Date.parse(payload.birthDate)) || new Date(payload.birthDate).toISOString().slice(0,10) !== payload.birthDate || payload.birthDate > iso_(now).slice(0,10))) throw new Error('วันเกิดไม่ถูกต้อง');
+  for (const [field, max] of [['ageYears',120],['weightKg',500],['heightCm',300]]) {
+    const value = payload[field];
+    if (value !== '' && value != null && (!Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > max || field !== 'ageYears' && Number(value) === 0)) throw new Error('อายุ น้ำหนัก หรือส่วนสูงไม่ถูกต้อง');
+  }
+  const bmi = calculateBmi_(payload.weightKg, payload.heightCm);
   if (isStaff) {
-    parentId = cid ? 'parent_' + childId : existing ? existing.parentId : session.user.userId;
+    parentId = existing ? existing.parentId : cid ? 'parent_' + childId : session.user.userId;
   } else {
     parentId = session.user.userId;
   }
@@ -446,8 +462,34 @@ async function saveChildProfile(token, payload) {
   await audit_(session.user.userId, 'saveChildProfile', 'Child', childId, {});
   return {
     ok: true,
-    child: await getChildById_(childId)
+    child: publicChild_(await getChildById_(childId))
   };
+}
+async function getChildForEdit(token, childId) {
+  const session = await requireSession_(token);
+  requireClinicalRole_(session.user);
+  const child = await getChildById_(childId);
+  if (!child) throw new Error('ไม่พบข้อมูลเด็ก');
+  return { ...publicChild_(child), birthDate: normDateStr_(child.birthDate), consentVersion: child.consentVersion, comorbidities: parseJsonObject_(child.comorbiditiesJson) };
+}
+async function listChildTrash(token) {
+  const session = await requireSession_(token);
+  requireAdminRole_(session.user);
+  return (await fetchSupabaseRows_(APP_CONFIG.tables.children, { includeDeleted: true })).filter(child => child.deletedAt).map(child => ({ ...publicChild_(child), deletedAt: child.deletedAt }));
+}
+async function setChildTrash(token, childId, deleted, confirmation) {
+  const session = await requireSession_(token);
+  requireAdminRole_(session.user);
+  if (typeof deleted !== 'boolean' || confirmation !== childId) throw new Error('กรุณายืนยันรายการเด็ก');
+  const children = await fetchSupabaseRows_(APP_CONFIG.tables.children, { includeDeleted: true });
+  const child = children.find(row => row.childId === childId);
+  if (!child) throw new Error('ไม่พบข้อมูลเด็ก');
+  if (!deleted && child.childCidNumber && children.some(row => row.childId !== childId && !row.deletedAt && row.childCidNumber === child.childCidNumber)) throw new Error('มีเลขบัตรนี้ในทะเบียนปัจจุบัน กรุณาตรวจสอบก่อนกู้คืน');
+  if (!!child.deletedAt !== deleted) {
+    await updateObjectRow_(APP_CONFIG.tables.children, childId, { deletedAt: deleted ? iso_(new Date()) : null, updatedAt: iso_(new Date()) });
+    await audit_(session.user.userId, deleted ? 'trashChild' : 'restoreChild', 'Child', childId, {});
+  }
+  return { ok: true };
 }
 async function registerChildPublic(payload) {
   ensureAppReady_();
@@ -976,7 +1018,8 @@ function fromSupabaseObject_(logicalName, row) {
   result._id = result[meta.primaryKey];
   return result;
 }
-async function supabaseRequest_(logicalName, method, query, payload, extraHeaders) {
+async function supabaseRequest_(logicalName, method, query, payload, extraHeaders, includeDeleted = false) {
+  if (method.toLowerCase() === 'get' && !includeDeleted && ['Children','Screenings','Videos'].includes(logicalName)) query = (query ? query + '&' : '') + 'deleted_at=is.null';
   const config = getSupabaseConfig_();
   const meta = getSupabaseTable_(logicalName);
   const headers = {
@@ -1038,7 +1081,7 @@ async function fetchSupabaseRows_(logicalName, options) {
     const queryParts = baseParts.concat(['limit=' + limit, 'offset=' + offset]);
     const response = await supabaseRequest_(logicalName, 'get', queryParts.join('&'), null, total === null ? {
       Prefer: 'count=exact'
-    } : {});
+    } : {}, options.includeDeleted);
     const page = Array.isArray(response.data) ? response.data : [];
     if (total === null) total = parseTotalCount_(response.headers);
     rows = rows.concat(page);
@@ -1318,5 +1361,5 @@ async function getVideoUrl(token, videoId) {
   return data.signedUrl;
 }
 
-return { apiBootstrap, loginWithCid, loginParentLookup, loginAdmin, registerChildPublic, saveChildProfile, submitScreening, listParentDashboard, listClinicalDashboard, listAdminDashboard, getReportData, saveClinicalReview, updateUserByAdmin, updateVideoReviewByAdmin, prepareVideoUpload, completeVideoUpload, getVideoUrl, revokeSession };
+return { apiBootstrap, loginWithCid, loginParentLookup, loginAdmin, registerChildPublic, saveChildProfile, getChildForEdit, listChildTrash, setChildTrash, submitScreening, listParentDashboard, listClinicalDashboard, listAdminDashboard, getReportData, saveClinicalReview, updateUserByAdmin, updateVideoReviewByAdmin, prepareVideoUpload, completeVideoUpload, getVideoUrl, revokeSession };
 }
