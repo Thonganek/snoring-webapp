@@ -39,8 +39,9 @@ export function createSiteHandler({ html, configSource, supabaseUrl, publishable
       try {
         const upstream = await fetcher(endpoint, {
           method: 'POST', headers: { 'Content-Type': 'application/json', apikey: publishableKey },
-          body, redirect: 'error', signal: controller.signal
+          body, redirect: 'manual', signal: controller.signal
         });
+        if (upstream.status >= 300 && upstream.status < 400) return json(502, 'ระบบฐานข้อมูลตอบกลับไม่สมบูรณ์ กรุณาลองใหม่');
         if (!upstream.headers.get('content-type')?.includes('application/json')) return json(502, 'ระบบฐานข้อมูลตอบกลับไม่สมบูรณ์ กรุณาลองใหม่');
         return new Response(await upstream.text(), { status: upstream.status, headers: {
           'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'

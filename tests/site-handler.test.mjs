@@ -12,7 +12,7 @@ test('same-origin API forwards to the fixed Supabase endpoint without website cr
     assert.equal(url, 'https://example.supabase.co/functions/v1/snoring-api');
     assert.deepEqual(options.headers, { 'Content-Type': 'application/json', apikey: 'public-key' });
     assert.deepEqual(JSON.parse(options.body), { method: 'loginAdmin', args: ['test', 'test'] });
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     return Response.json({ ok: false, message: 'Invalid credentials' }, { status: 400, headers: { 'set-cookie': 'upstream=secret' } });
   } });
   const response = await handle(request(undefined, {
@@ -36,7 +36,7 @@ test('API rejects cross-origin requests, invalid bodies and unsupported methods 
 });
 
 test('upstream network failures and non-JSON responses produce actionable JSON errors', async () => {
-  for (const fetcher of [async () => { throw new TypeError('Failed to fetch'); }, async () => new Response('<html>Unavailable</html>', { status: 503 })]) {
+  for (const fetcher of [async () => { throw new TypeError('Failed to fetch'); }, async () => new Response('<html>Unavailable</html>', { status: 503 }), async () => Response.json({}, { status: 302, headers: { location: 'https://other.test' } })]) {
     const handle = createSiteHandler({ ...config, fetcher });
     const response = await handle(request());
     assert([502, 503].includes(response.status));
