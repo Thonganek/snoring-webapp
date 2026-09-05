@@ -1,0 +1,6 @@
+project_id = "snoring-webapp"
+
+[functions.snoring-api]
+# Public registration/login; protected methods validate app sessions in the handler.
+verify_jwt = false
+entrypoint = "./functions/snoring-api/index.ts"

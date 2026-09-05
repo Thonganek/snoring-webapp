@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+Supabase/.temp/
+Supabase/.branches/
+Supabase/.project-deploy.local.json
+.deployment/
+test-results/
