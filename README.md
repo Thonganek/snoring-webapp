@@ -1,6 +1,6 @@
 # ระบบคัดกรองเด็กนอนกรน — Supabase
 
-หน้าเว็บหลักคือ **`index.html` ที่โฟลเดอร์ราก** รวม HTML, CSS และ JavaScript ไว้ด้วยกัน เชื่อมต่อ Supabase Edge Function โดยตรง ข้อมูลเก็บใน Supabase PostgreSQL และวิดีโอเก็บใน Supabase Storage
+หน้าเว็บหลักคือ **`index.html` ที่โฟลเดอร์ราก** รวม HTML, CSS และ JavaScript ไว้ด้วยกัน เรียก API ผ่าน `/api` บนเซิร์ฟเวอร์ของเว็บไซต์ ซึ่งส่งต่อไปยัง Supabase Edge Function ข้อมูลเก็บใน Supabase PostgreSQL และวิดีโอเก็บใน Supabase Storage
 
 ```text
 index.html                        หน้าเว็บหลัก
@@ -29,7 +29,11 @@ npm ci
 npm start
 ```
 
-เปิด `http://localhost:5173` หากขึ้น hosting ให้อัปโหลดเฉพาะ `index.html` และ `app-config.js` และเพิ่มโดเมนใน `APP_ALLOWED_ORIGINS` ของ Edge Function
+เปิด `http://localhost:5173` หรือ `http://127.0.0.1:5173` ห้ามเปิดด้วยการดับเบิลคลิกไฟล์ `index.html` เพราะ API ต้องทำงานผ่านเซิร์ฟเวอร์
+
+เว็บไซต์ที่เผยแพร่: https://snoring-child-screening.jarunyoo.chatgpt.site
+
+สำหรับ Sites ให้รัน `npm run build:site` แล้วเผยแพร่ผลลัพธ์ใน `dist/` พร้อม Worker ที่ `dist/server/index.js` ซึ่งให้บริการ `/api` ด้วย การอัปโหลดเฉพาะไฟล์ HTML ไปยัง static hosting จะไม่เพียงพอ เซิร์ฟเวอร์ส่งต่อเฉพาะ JSON และ public key ไปยัง Supabase โดยไม่ส่ง cookie หรือรหัสอนุญาตของเว็บไซต์
 
 ## ทดสอบ
 

@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
+import { createSiteHandler } from './site-handler.mjs';
 
 const root = new URL('../', import.meta.url);
 const source = await fs.readFile(new URL('app-config.js', root), 'utf8');
@@ -29,18 +30,8 @@ await fs.mkdir(server, { recursive: true });
 assert((await fs.readdir(server)).every(name => name === 'index.js'), 'Unexpected worker output');
 const html = await fs.readFile(new URL('index.html', output), 'utf8');
 const configSource = await fs.readFile(new URL('app-config.js', output), 'utf8');
-const worker = `const pages = new Map(${JSON.stringify([
-  ['/', [html, 'text/html; charset=utf-8']],
-  ['/index.html', [html, 'text/html; charset=utf-8']],
-  ['/app-config.js', [configSource, 'text/javascript; charset=utf-8']]
-])});
-export default { async fetch(request) {
-  const item = pages.get(new URL(request.url).pathname);
-  if (!item || !['GET', 'HEAD'].includes(request.method)) return new Response('Not found', { status: 404 });
-  return new Response(request.method === 'HEAD' ? null : item[0], { headers: {
-    'Content-Type': item[1], 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'
-  } });
-} };
+const worker = `${createSiteHandler.toString()}
+export default { fetch: createSiteHandler(${JSON.stringify({ html, configSource, supabaseUrl: config.supabaseUrl, publishableKey: config.publishableKey })}) };
 `;
 await fs.writeFile(new URL('index.js', server), worker);
 console.log('Public website and Sites worker built in dist/; only public assets are served.');
